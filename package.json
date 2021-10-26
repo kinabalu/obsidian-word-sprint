@@ -8,7 +8,7 @@
 		"build": "node esbuild.config.mjs production"
 	},
 	"keywords": [],
-	"author": "",
+	"author": "Andrew Lombardi <andrew@mysticcoders.com>",
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.1",

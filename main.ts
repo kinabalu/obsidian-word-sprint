@@ -12,6 +12,8 @@ const DEFAULT_SETTINGS: WordSprintSettings = {
 
 export default class WordSprintPlugin extends Plugin {
 	settings: WordSprintSettings;
+	sprintInterval : number;
+	statusBarItemEl : HTMLElement;
 
 	async onload() {
 		await this.loadSettings();
@@ -21,27 +23,37 @@ export default class WordSprintPlugin extends Plugin {
 			name: 'Start 25 minute Word Sprint',
 			callback: () => {
 				let secondsTotal = 25 * 60
-				let statusBarItemEl = this.addStatusBarItem()
+				this.statusBarItemEl = this.addStatusBarItem()
 
 				const now = Date.now()
-				statusBarItemEl.setText('Word Sprint- 25:00 left')
+				this.statusBarItemEl.setText('Word Sprint- 25:00 left')
 
-				const sprintInterval = window.setInterval(() => {
+				this.sprintInterval = window.setInterval(() => {
 					const currentNow = Date.now()
 					const elapsedSeconds = Math.floor((currentNow - now) / 1000)
 
 					const secondsLeft = secondsTotal - elapsedSeconds
 					const minutes = Math.floor(secondsLeft / 60)
 					const seconds = Math.ceil(secondsLeft % 60)
-					statusBarItemEl.setText(`Word Sprint - ${numeral(minutes).format('00')}:${numeral(seconds).format('00')} left`)
+					this.statusBarItemEl.setText(`Word Sprint - ${numeral(minutes).format('00')}:${numeral(seconds).format('00')} left`)
 
 					if (secondsLeft <= 0) {
-						window.clearInterval(sprintInterval)
-						statusBarItemEl.setText('')
+						window.clearInterval(this.sprintInterval)
+						this.statusBarItemEl.setText('')
 						new Notice('Word Sprint Complete! Congratulations!')
 					}
 				}, 1000)
-				this.registerInterval(sprintInterval);
+				this.registerInterval(this.sprintInterval);
+			}
+		})
+
+		this.addCommand({
+			id: 'stop-25-minute-word-sprint',
+			name: 'Stop 25 minute Word Sprint',
+			callback: () => {
+				this.statusBarItemEl.setText('')
+				new Notice('Word Sprint Cancelled!')
+				window.clearInterval(this.sprintInterval)
 			}
 		})
 		this.addSettingTab(new WordSprintSettingsTab(this.app, this));
