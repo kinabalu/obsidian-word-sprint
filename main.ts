@@ -1,13 +1,13 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 import numeral from 'numeral'
 
 interface WordSprintSettings {
-	mySetting: string;
+	sprintLength: number;
 }
 
 const DEFAULT_SETTINGS: WordSprintSettings = {
-	mySetting: 'default'
+	sprintLength: 25
 }
 
 export default class WordSprintPlugin extends Plugin {
@@ -15,27 +15,31 @@ export default class WordSprintPlugin extends Plugin {
 	sprintInterval : number;
 	statusBarItemEl : HTMLElement;
 
+	secondsToMMSS(seconds : number) {
+		const minutes = Math.floor(seconds / 60)
+		const secondsForFormatting = Math.ceil(seconds % 60)
+		return `${numeral(minutes).format('00')}:${numeral(secondsForFormatting).format('00')}`
+	}
+
 	async onload() {
 		await this.loadSettings();
 
 		this.addCommand({
-			id: 'start-25-minute-word-sprint',
-			name: 'Start 25 minute Word Sprint',
+			id: 'start-word-sprint',
+			name: 'Start Word Sprint',
 			callback: () => {
-				let secondsTotal = 25 * 60
+				let secondsTotal = this.settings.sprintLength * 60
 				this.statusBarItemEl = this.addStatusBarItem()
 
 				const now = Date.now()
-				this.statusBarItemEl.setText('Word Sprint- 25:00 left')
+				this.statusBarItemEl.setText(`Word Sprint - ${this.secondsToMMSS(secondsTotal)} left`)
 
 				this.sprintInterval = window.setInterval(() => {
 					const currentNow = Date.now()
 					const elapsedSeconds = Math.floor((currentNow - now) / 1000)
 
 					const secondsLeft = secondsTotal - elapsedSeconds
-					const minutes = Math.floor(secondsLeft / 60)
-					const seconds = Math.ceil(secondsLeft % 60)
-					this.statusBarItemEl.setText(`Word Sprint - ${numeral(minutes).format('00')}:${numeral(seconds).format('00')} left`)
+					this.statusBarItemEl.setText(`Word Sprint - ${this.secondsToMMSS(secondsLeft)} left`)
 
 					if (secondsLeft <= 0) {
 						window.clearInterval(this.sprintInterval)
@@ -48,12 +52,16 @@ export default class WordSprintPlugin extends Plugin {
 		})
 
 		this.addCommand({
-			id: 'stop-25-minute-word-sprint',
-			name: 'Stop 25 minute Word Sprint',
+			id: 'stop-word-sprint',
+			name: 'Stop Word Sprint',
 			callback: () => {
-				this.statusBarItemEl.setText('')
-				new Notice('Word Sprint Cancelled!')
-				window.clearInterval(this.sprintInterval)
+				if (this.sprintInterval) {
+					this.statusBarItemEl.setText('')
+					new Notice('Word Sprint Cancelled!')
+					window.clearInterval(this.sprintInterval)
+				} else {
+					new Notice('No Word Sprint running')
+				}
 			}
 		})
 		this.addSettingTab(new WordSprintSettingsTab(this.app, this));
@@ -86,5 +94,16 @@ class WordSprintSettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		containerEl.createEl('h2', {text: 'Word Sprint Settings'});
+
+		new Setting(containerEl)
+			.setName('Sprint Length')
+			.setDesc('(in minutes)')
+			.addText(text => text
+				.setPlaceholder('25')
+				.setValue(`${this.plugin.settings.sprintLength}`)
+				.onChange(async (value) => {
+					this.plugin.settings.sprintLength = Number(value)
+					await this.plugin.saveSettings();
+				}));
 	}
 }
