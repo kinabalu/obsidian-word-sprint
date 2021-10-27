@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-word-sprint",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"description": "Word Sprint for Obsidian inspired by discussions in NANOWRIMO 2021 in creative channel on Discord",
 	"main": "main.js",
 	"scripts": {
@@ -10,6 +10,10 @@
 	"keywords": [],
 	"author": "Andrew Lombardi <andrew@mysticcoders.com>",
 	"license": "MIT",
+	"repository": {
+		"type" : "git",
+		"url" : "https://github.com/kinabalu/obsidian-word-sprint.git"
+	},
 	"devDependencies": {
 		"@types/node": "^16.11.1",
 		"@types/numeral": "^2.0.2",

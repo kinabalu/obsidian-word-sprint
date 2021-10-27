@@ -92,6 +92,10 @@ export default class WordSprintPlugin extends Plugin {
 			editorCallback: async (editor: Editor) => {
 				let statsText : string;
 
+				if (this.sprintStarted) {
+					new Notice("Sprint still going, but here's the stats as of this moment")
+				}
+
 				statsText = `Total Words Written: ${this.getWordCountDisplay()}\n`
 				statsText += `Yellow Notices: ${this.yellowNoticeCount}\n`
 				statsText += `Red Notices: ${this.redNoticeCount}\n`
@@ -104,6 +108,10 @@ export default class WordSprintPlugin extends Plugin {
 			id: 'start-word-sprint',
 			name: 'Start Word Sprint',
 			callback: () => {
+				if (this.sprintStarted) {
+					new Notice("Sprint already started! Please stop current sprint if you'd like to reset")
+					return
+				}
 				let secondsTotal = this.settings.sprintLength * 60
 				this.statusBarItemEl = this.addStatusBarItem()
 				let status = 'GREEN'
@@ -111,6 +119,14 @@ export default class WordSprintPlugin extends Plugin {
 				this.lastWordTime = Date.now()
 				this.statusBarItemEl.setText(`Word Sprint - ${this.secondsToMMSS(secondsTotal)} left - ${this.getWordCountDisplay()} words written`)
 				this.sprintStarted = true
+
+				// reset all the stats
+				this.yellowNoticeCount = 0
+				this.redNoticeCount = 0
+				this.longestWritingStretch = 0
+				this.longestStretchNotWriting = 0
+				this.yellowNoticeShown = false
+				this.redNoticeShown	= false
 
 				if (this.app.workspace.getActiveViewOfType(MarkdownView)) {
 					let viewData = this.app.workspace.getActiveViewOfType(MarkdownView).getViewData()
@@ -164,9 +180,10 @@ export default class WordSprintPlugin extends Plugin {
 
 					this.statusBarItemEl.setText(`Word Sprint - ${this.secondsToMMSS(secondsLeft)} left - ${this.getWordCountDisplay()} words written - ${status}`)
 
-					if (secondsLeft <= 0) {
+					if (secondsLeft <= 0 && this.sprintStarted) {
 						window.clearInterval(this.sprintInterval)
 						this.statusBarItemEl.setText('')
+						this.sprintStarted = false
 						new Notice(`Word Sprint Complete! Congratulations! Total words written: ${this.getWordCountDisplay()}`)
 					}
 				}, 1000)
