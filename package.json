@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-word-sprint",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "Word Sprint for Obsidian inspired by discussions in NANOWRIMO 2021 in creative channel on Discord",
 	"main": "main.js",
 	"scripts": {
