@@ -8,7 +8,7 @@ import {
 	TFile,
 	MarkdownView,
 	Debouncer,
-	Editor, EditorPosition
+	Editor, EditorPosition, Modal
 } from 'obsidian';
 
 import numeral from 'numeral'
@@ -216,6 +216,7 @@ export default class WordSprintPlugin extends Plugin {
 						this.statusBarItemEl.setText('')
 						this.sprintStarted = false
 						new Notice(`Word Sprint Complete! Congratulations! Total words written: ${this.getWordCountDisplay()}`)
+						new EndOfSprintStatsModal(this.app, this).open()
 					}
 				}, 1000)
 				this.registerInterval(this.sprintInterval);
@@ -229,6 +230,7 @@ export default class WordSprintPlugin extends Plugin {
 				if (this.sprintInterval) {
 					this.statusBarItemEl.setText('')
 					this.sprintStarted = false
+					new EndOfSprintStatsModal(this.app, this).open()
 					new Notice(`Word Sprint Cancelled! Total words written: ${this.getWordCountDisplay()}`)
 					window.clearInterval(this.sprintInterval)
 				} else {
@@ -245,10 +247,6 @@ export default class WordSprintPlugin extends Plugin {
 				this.debouncedUpdate(contents, file.path)
 			}
 		}
-	}
-
-	onunload() {
-
 	}
 
 	//Credit: better-word-count by Luke Leppan (https://github.com/lukeleppan/better-word-count)
@@ -278,6 +276,68 @@ export default class WordSprintPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+}
+
+class EndOfSprintStatsModal extends Modal {
+	plugin : WordSprintPlugin;
+
+	constructor(app: App, plugin: WordSprintPlugin) {
+		super(app);
+		this.plugin = plugin
+	}
+
+	onOpen() {
+		let {contentEl} = this;
+
+		contentEl.createEl('h2', {text: 'Word Sprint Stats'})
+
+		const averageWordsPerMinute = this.plugin.wordsPerMinute.reduce((total: number, amount: WordsPerMinute, index: number, array: WordsPerMinute[]) => {
+			total += amount.now
+			return total / array.length
+		}, 0)
+
+		new Setting(contentEl)
+			.setName("Total Words Written")
+			.addText((text) => {
+				text.setValue(`${this.plugin.getWordCountDisplay()}`)
+				text.setDisabled(true)
+			})
+		new Setting(contentEl)
+			.setName("Average Words Per Minute")
+			.addText((text) => {
+				text.setValue(`${numeral(averageWordsPerMinute).format('0')}`)
+				text.setDisabled(true)
+			})
+		new Setting(contentEl)
+			.setName("Yellow Notices")
+			.addText((text) => {
+				text.setValue(`${this.plugin.yellowNoticeCount}`)
+				text.setDisabled(true)
+			})
+		new Setting(contentEl)
+			.setName("Red Notices")
+			.addText((text) => {
+				text.setValue(`${this.plugin.redNoticeCount}`)
+				text.setDisabled(true)
+			})
+		new Setting(contentEl)
+			.setName("Longest Stretch Not Writing")
+			.addText((text) => {
+				text.setValue(`${Math.ceil(this.plugin.longestStretchNotWriting)} seconds`)
+				text.setDisabled(true)
+			})
+		new Setting(contentEl)
+			.setName("Total Time Not Writing")
+			.addText((text) => {
+				text.setValue(`${Math.ceil(this.plugin.totalTimeNotWriting)} seconds`)
+				text.setDisabled(true)
+			})
+	}
+
+	onClose() {
+		let {contentEl} = this;
+		contentEl.empty();
 	}
 }
 
