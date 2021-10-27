@@ -19,6 +19,11 @@ interface WordSprintSettings {
 	redNoticeText : string;
 }
 
+interface WordsPerMinute {
+	previous: number;
+	now: number;
+}
+
 const DEFAULT_SETTINGS: WordSprintSettings = {
 	sprintLength: 25,
 	yellowNoticeText: "Keep on writing, this is a sprint!",
@@ -26,20 +31,27 @@ const DEFAULT_SETTINGS: WordSprintSettings = {
 }
 
 export default class WordSprintPlugin extends Plugin {
-	settings: WordSprintSettings;
-	sprintInterval : number;
-	statusBarItemEl : HTMLElement;
-	sprintStarted : boolean = false;
-	debouncedUpdate: Debouncer<[contents: string, filepath: string]>;
+	settings: WordSprintSettings
+	sprintInterval : number
+	statusBarItemEl : HTMLElement
+	sprintStarted : boolean = false
+	debouncedUpdate: Debouncer<[contents: string, filepath: string]>
 
-	lastWordTime : number = 0;
-	previousWordCount : number;
-	wordCount : number = 0;
+	lastWordTime : number = 0
+	previousWordCount : number
+	wordCount : number = 0
+	wordsPerMinute : WordsPerMinute[] = [{
+		previous: 0,
+		now: 0,
+	}];
 
-	yellowNoticeCount : number = 0;
-	redNoticeCount : number = 0;
-	longestWritingStretch : number = 0;
-	longestStretchNotWriting : number = 0;
+	latestMinute : number = 0
+
+	yellowNoticeCount : number = 0
+	redNoticeCount : number = 0
+	longestWritingStretch : number = 0
+	longestStretchNotWriting : number = 0
+	totalTimeNotWriting : number = 0
 
 	yellowNoticeShown : boolean = false
 	redNoticeShown : boolean = false
@@ -70,20 +82,8 @@ export default class WordSprintPlugin extends Plugin {
 			this.lastWordTime = Date.now()
 			const curr = this.getWordCount(contents)
 			this.wordCount = curr
-			// updateWordCount(contents: string, filepath: string) {
-			// 	const curr = this.getWordCount(contents);
-			// 	if (this.settings.dayCounts.hasOwnProperty(this.today)) {
-			// 		if (this.settings.todaysWordCount.hasOwnProperty(filepath)) {//updating existing file
-			// 			this.settings.todaysWordCount[filepath].current = curr;
-			// 		} else {//created new file during session
-			// 			this.settings.todaysWordCount[filepath] = { initial: curr, current: curr };
-			// 		}
-			// 	} else {//new day, flush the cache
-			// 		this.settings.todaysWordCount = {};
-			// 		this.settings.todaysWordCount[filepath] = { initial: curr, current: curr };
-			// 	}
-			// 	this.updateCounts();
-			// }
+
+			this.wordsPerMinute[this.latestMinute].now = (this.getWordCountDisplay() - this.wordsPerMinute[this.latestMinute].previous)
 		}, 400, false)
 
 		this.addCommand({
@@ -96,10 +96,16 @@ export default class WordSprintPlugin extends Plugin {
 					new Notice("Sprint still going, but here's the stats as of this moment")
 				}
 
+				const averageWordsPerMinute = this.wordsPerMinute.reduce((total: number, amount: WordsPerMinute, index: number, array: WordsPerMinute[]) => {
+					total += amount.now
+					return total / array.length
+				}, 0)
 				statsText = `Total Words Written: ${this.getWordCountDisplay()}\n`
+				statsText += `Average Words Per Minute: ${numeral(averageWordsPerMinute).format('0')}\n`
 				statsText += `Yellow Notices: ${this.yellowNoticeCount}\n`
 				statsText += `Red Notices: ${this.redNoticeCount}\n`
-				statsText += `Longest Stretch Not Writing: ${Math.ceil(this.longestStretchNotWriting)} seconds`
+				statsText += `Longest Stretch Not Writing: ${Math.ceil(this.longestStretchNotWriting)} seconds\n`
+				statsText += `Total Time Not Writing: ${Math.ceil(this.totalTimeNotWriting)} seconds\n`
 
 				editor.replaceSelection(statsText)
 			}
@@ -125,6 +131,11 @@ export default class WordSprintPlugin extends Plugin {
 				this.redNoticeCount = 0
 				this.longestWritingStretch = 0
 				this.longestStretchNotWriting = 0
+				this.totalTimeNotWriting = 0
+				this.wordsPerMinute = [{
+					previous: 0,
+					now: 0
+				}]
 				this.yellowNoticeShown = false
 				this.redNoticeShown	= false
 
@@ -140,22 +151,42 @@ export default class WordSprintPlugin extends Plugin {
 					const secondsLeft = secondsTotal - elapsedSeconds
 
 					const secondsSinceLastWord = Math.floor(Date.now() - this.lastWordTime) / 1000
+
+					if (Math.floor(elapsedSeconds / 60) > this.latestMinute) {
+						this.latestMinute = Math.floor(elapsedSeconds / 60)
+
+						this.wordsPerMinute.push({
+							previous: this.getWordCountDisplay(),
+							now: 0,
+						})
+					}
 					if (secondsSinceLastWord >= 10 && !this.yellowNoticeShown) {
 						new Notice(this.settings.yellowNoticeText)
 						this.yellowNoticeShown = true
 						status = 'YELLOW'
 						this.yellowNoticeCount += 1
-						this.longestStretchNotWriting += secondsSinceLastWord
+
+						if (secondsSinceLastWord > this.longestStretchNotWriting) {
+							this.longestStretchNotWriting = secondsSinceLastWord
+						}
+						this.totalTimeNotWriting += secondsSinceLastWord
 					} else if (secondsSinceLastWord >= 60 && !this.redNoticeShown) {
 						new Notice(this.settings.redNoticeText)
 						this.redNoticeShown = true
 						status = 'RED'
 						this.redNoticeCount += 1
-						this.longestStretchNotWriting += secondsSinceLastWord
+						if (secondsSinceLastWord > this.longestStretchNotWriting) {
+							this.longestStretchNotWriting = secondsSinceLastWord
+						}
+						this.totalTimeNotWriting += secondsSinceLastWord
 					} else if(secondsSinceLastWord < 10) {
 						this.yellowNoticeShown = false
 						this.redNoticeShown = false
 						status = 'GREEN'
+						if (secondsSinceLastWord > this.longestStretchNotWriting) {
+							this.longestStretchNotWriting = secondsSinceLastWord
+						}
+						this.totalTimeNotWriting += secondsSinceLastWord
 					}
 
 					// if (this.app.workspace.getActiveViewOfType(MarkdownView)) {
