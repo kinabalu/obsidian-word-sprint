@@ -24,6 +24,10 @@ export default class WordSprintPlugin extends Plugin {
 	yellowNoticeShown : boolean = false
 	redNoticeShown : boolean = false
 
+	getWordCountDisplay() : number {
+		return this.wordCount - this.previousWordCount
+	}
+
 	secondsToMMSS(seconds : number) {
 		const minutes = Math.floor(seconds / 60)
 		const secondsForFormatting = Math.ceil(seconds % 60)
@@ -74,15 +78,18 @@ export default class WordSprintPlugin extends Plugin {
 			callback: () => {
 				let secondsTotal = this.settings.sprintLength * 60
 				this.statusBarItemEl = this.addStatusBarItem()
-
 				let status = 'GREEN'
-
 				const now = Date.now()
 				this.lastWordTime = Date.now()
-
-				this.statusBarItemEl.setText(`Word Sprint - ${this.secondsToMMSS(secondsTotal)} left - ${this.wordCount} words written`)
-
+				this.statusBarItemEl.setText(`Word Sprint - ${this.secondsToMMSS(secondsTotal)} left - ${this.getWordCountDisplay()} words written`)
 				this.sprintStarted = true
+
+				if (this.app.workspace.getActiveViewOfType(MarkdownView)) {
+					this.previousWordCount = this.getWordCount(this.app.workspace.getActiveViewOfType(MarkdownView).getViewData())
+					
+					console.log(`Previous word count: ${this.previousWordCount}`)
+				}
+
 				this.sprintInterval = window.setInterval(() => {
 					const currentNow = Date.now()
 					const elapsedSeconds = Math.floor((currentNow - now) / 1000)
@@ -104,12 +111,12 @@ export default class WordSprintPlugin extends Plugin {
 						this.redNoticeShown = false
 						status = 'GREEN'
 					}
-					this.statusBarItemEl.setText(`Word Sprint - ${this.secondsToMMSS(secondsLeft)} left - ${this.wordCount} words written - ${status}`)
+					this.statusBarItemEl.setText(`Word Sprint - ${this.secondsToMMSS(secondsLeft)} left - ${this.getWordCountDisplay()} words written - ${status}`)
 
 					if (secondsLeft <= 0) {
 						window.clearInterval(this.sprintInterval)
 						this.statusBarItemEl.setText('')
-						new Notice(`Word Sprint Complete! Congratulations! Total words written: ${this.wordCount}`)
+						new Notice(`Word Sprint Complete! Congratulations! Total words written: ${this.getWordCountDisplay()}`)
 					}
 				}, 1000)
 				this.registerInterval(this.sprintInterval);
@@ -123,7 +130,7 @@ export default class WordSprintPlugin extends Plugin {
 				if (this.sprintInterval) {
 					this.statusBarItemEl.setText('')
 					this.sprintStarted = false
-					new Notice(`Word Sprint Cancelled! Total words written: ${this.wordCount}`)
+					new Notice(`Word Sprint Cancelled! Total words written: ${this.getWordCountDisplay()}`)
 					window.clearInterval(this.sprintInterval)
 				} else {
 					new Notice('No Word Sprint running')
