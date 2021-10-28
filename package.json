@@ -11,18 +11,20 @@
 	"author": "Andrew Lombardi <andrew@mysticcoders.com>",
 	"license": "MIT",
 	"repository": {
-		"type" : "git",
-		"url" : "https://github.com/kinabalu/obsidian-word-sprint.git"
+		"type": "git",
+		"url": "https://github.com/kinabalu/obsidian-word-sprint.git"
 	},
 	"devDependencies": {
 		"@types/node": "^16.11.1",
 		"@types/numeral": "^2.0.2",
+		"@types/uuid": "^8.3.1",
 		"esbuild": "0.13.8",
 		"obsidian": "^0.12.17",
 		"tslib": "2.3.1",
 		"typescript": "4.4.4"
 	},
 	"dependencies": {
-		"numeral": "^2.0.6"
+		"numeral": "^2.0.6",
+		"uuid": "^8.3.2"
 	}
 }
