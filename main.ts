@@ -52,12 +52,6 @@ export default class WordSprintPlugin extends Plugin {
 		return wordCountDisplay >= 0 ? wordCountDisplay : 0
 	}
 
-	// secondsToMMSS(seconds : number) {
-	// 	const minutes = Math.floor(seconds / 60)
-	// 	const secondsForFormatting = Math.ceil(seconds % 60)
-	// 	return `${numeral(minutes).format('00')}:${numeral(secondsForFormatting).format('00')}`
-	// }
-
 	async onload() {
 		await this.loadSettings();
 
@@ -168,26 +162,6 @@ export default class WordSprintPlugin extends Plugin {
 						this.redNoticeShown = false
 						status = 'GREEN'
 					}
-
-					// if (this.app.workspace.getActiveViewOfType(MarkdownView)) {
-					// 	let viewData = this.app.workspace.getActiveViewOfType(MarkdownView).getViewData()
-					// 	const editor = this.app.workspace.getActiveViewOfType(MarkdownView).editor
-					//
-					// 	const timerIndex = viewData.indexOf('#sprint')
-					//
-					// 	if (timerIndex >= 0) {
-					// 		let timerPosition : EditorPosition = editor.offsetToPos(timerIndex)
-					//
-					// 		const timerLine = editor.getLine(timerPosition.line)
-					//
-					// 		let endOfTimerPosition : EditorPosition = {
-					// 			line: timerPosition.line,
-					// 			ch: timerPosition.ch + timerLine.length
-					// 		} as EditorPosition
-					//
-					// 		editor.replaceRange(`#sprint: ${secondsToMMSS(secondsLeft)} left - ${this.getWordCountDisplay()} words written - ${status}`, timerPosition, endOfTimerPosition)
-					// 	}
-					// }
 
 					this.statusBarItemEl.setText(`Word Sprint - ${secondsToMMSS(msLeft / 1000)} left - ${this.getWordCountDisplay()} words written - ${status}`)
 
