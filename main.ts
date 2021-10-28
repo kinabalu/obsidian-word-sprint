@@ -61,7 +61,7 @@ export default class WordSprintPlugin extends Plugin {
 		this.debouncedUpdate = debounce((contents: string, filepath: string) => {
 			const secondsSinceLastWord = Date.now() - this.lastWordTime
 
-			console.log(`Date.now(): ${Date.now()} - secondsSinceLastWord: ${secondsSinceLastWord / 1000} seconds - this.lastWordTime: ${this.lastWordTime} - this.longestStretchNotWriting: ${this.longestStretchNotWriting / 1000} seconds`)
+			console.log(`Date.now(): ${Date.now() / 1000} - secondsSinceLastWord: ${secondsSinceLastWord / 1000} seconds - this.lastWordTime: ${this.lastWordTime} - this.longestStretchNotWriting: ${this.longestStretchNotWriting / 1000} seconds`)
 			if (secondsSinceLastWord > this.longestStretchNotWriting) {
 				this.longestStretchNotWriting = secondsSinceLastWord
 			}
