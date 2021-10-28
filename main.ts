@@ -1,28 +1,19 @@
 import {
-	App,
 	Notice,
 	Plugin,
-	PluginSettingTab,
-	Setting,
 	debounce,
 	TFile,
 	MarkdownView,
 	Debouncer,
-	Editor, EditorPosition, Modal
+	Editor,
 } from 'obsidian';
 
 import numeral from 'numeral'
 
-interface WordSprintSettings {
-	sprintLength: number;
-	yellowNoticeText : string;
-	redNoticeText : string;
-}
-
-interface WordsPerMinute {
-	previous: number;
-	now: number;
-}
+import EndOfSprintStatsModal from './src/EndOfSprintStatsModal'
+import WordSprintSettingsTab from './src/WordSprintSettingsTab'
+import { WordsPerMinute, WordSprintSettings } from './src/settings'
+import { getWordCount, secondsToMMSS } from './src/utils'
 
 const DEFAULT_SETTINGS: WordSprintSettings = {
 	sprintLength: 25,
@@ -61,11 +52,11 @@ export default class WordSprintPlugin extends Plugin {
 		return wordCountDisplay >= 0 ? wordCountDisplay : 0
 	}
 
-	secondsToMMSS(seconds : number) {
-		const minutes = Math.floor(seconds / 60)
-		const secondsForFormatting = Math.ceil(seconds % 60)
-		return `${numeral(minutes).format('00')}:${numeral(secondsForFormatting).format('00')}`
-	}
+	// secondsToMMSS(seconds : number) {
+	// 	const minutes = Math.floor(seconds / 60)
+	// 	const secondsForFormatting = Math.ceil(seconds % 60)
+	// 	return `${numeral(minutes).format('00')}:${numeral(secondsForFormatting).format('00')}`
+	// }
 
 	async onload() {
 		await this.loadSettings();
@@ -73,15 +64,17 @@ export default class WordSprintPlugin extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on('quick-preview', this.onQuickPreview.bind(this))
 		)
-		// this.registerInterval(
-		// 	window.setInterval(() => {
-		// 	}, 200)
-		// )
-
 		this.debouncedUpdate = debounce((contents: string, filepath: string) => {
+			const secondsSinceLastWord = Date.now() - this.lastWordTime
+
+			console.log(`Date.now(): ${Date.now()} - secondsSinceLastWord: ${secondsSinceLastWord / 1000} seconds - this.lastWordTime: ${this.lastWordTime} - this.longestStretchNotWriting: ${this.longestStretchNotWriting / 1000} seconds`)
+			if (secondsSinceLastWord > this.longestStretchNotWriting) {
+				this.longestStretchNotWriting = secondsSinceLastWord
+			}
+			this.totalTimeNotWriting += secondsSinceLastWord
+
 			this.lastWordTime = Date.now()
-			const curr = this.getWordCount(contents)
-			this.wordCount = curr
+			this.wordCount = getWordCount(contents)
 
 			this.wordsPerMinute[this.latestMinute].now = (this.getWordCountDisplay() - this.wordsPerMinute[this.latestMinute].previous)
 		}, 400, false)
@@ -104,8 +97,8 @@ export default class WordSprintPlugin extends Plugin {
 				statsText += `Average Words Per Minute: ${numeral(averageWordsPerMinute).format('0')}\n`
 				statsText += `Yellow Notices: ${this.yellowNoticeCount}\n`
 				statsText += `Red Notices: ${this.redNoticeCount}\n`
-				statsText += `Longest Stretch Not Writing: ${Math.ceil(this.longestStretchNotWriting)} seconds\n`
-				statsText += `Total Time Not Writing: ${Math.ceil(this.totalTimeNotWriting)} seconds\n`
+				statsText += `Longest Stretch Not Writing: ${Math.ceil(this.longestStretchNotWriting / 1000)} seconds\n`
+				statsText += `Total Time Not Writing: ${Math.ceil(this.totalTimeNotWriting / 1000)} seconds\n`
 
 				editor.replaceSelection(statsText)
 			}
@@ -118,12 +111,12 @@ export default class WordSprintPlugin extends Plugin {
 					new Notice("Sprint already started! Please stop current sprint if you'd like to reset")
 					return
 				}
-				let secondsTotal = this.settings.sprintLength * 60
+				let msTotal = this.settings.sprintLength * 60 * 1000
 				this.statusBarItemEl = this.addStatusBarItem()
 				let status = 'GREEN'
 				const now = Date.now()
 				this.lastWordTime = Date.now()
-				this.statusBarItemEl.setText(`Word Sprint - ${this.secondsToMMSS(secondsTotal)} left - ${this.getWordCountDisplay()} words written`)
+				this.statusBarItemEl.setText(`Word Sprint - ${secondsToMMSS(msTotal / 1000)} left - ${this.getWordCountDisplay()} words written`)
 				this.sprintStarted = true
 
 				// reset all the stats
@@ -141,52 +134,39 @@ export default class WordSprintPlugin extends Plugin {
 
 				if (this.app.workspace.getActiveViewOfType(MarkdownView)) {
 					let viewData = this.app.workspace.getActiveViewOfType(MarkdownView).getViewData()
-					this.previousWordCount = this.getWordCount(viewData)
+					this.previousWordCount = getWordCount(viewData)
 				}
 
 				this.sprintInterval = window.setInterval(() => {
 					const currentNow = Date.now()
-					const elapsedSeconds = Math.floor((currentNow - now) / 1000)
+					const elapsedMs = currentNow - now
 
-					const secondsLeft = secondsTotal - elapsedSeconds
+					const msLeft = msTotal - elapsedMs
 
-					const secondsSinceLastWord = Math.floor(Date.now() - this.lastWordTime) / 1000
+					const msSinceLastWord = Date.now() - this.lastWordTime
 
-					if (Math.floor(elapsedSeconds / 60) > this.latestMinute) {
-						this.latestMinute = Math.floor(elapsedSeconds / 60)
+					if (Math.floor(elapsedMs / 1000 / 60) > this.latestMinute) {
+						this.latestMinute = Math.floor(elapsedMs / 1000 / 60)
 
 						this.wordsPerMinute.push({
 							previous: this.getWordCountDisplay(),
 							now: 0,
 						})
 					}
-					if (secondsSinceLastWord >= 10 && !this.yellowNoticeShown) {
+					if (msSinceLastWord >= 10 * 1000 && !this.yellowNoticeShown) {
 						new Notice(this.settings.yellowNoticeText)
 						this.yellowNoticeShown = true
 						status = 'YELLOW'
 						this.yellowNoticeCount += 1
-
-						if (secondsSinceLastWord > this.longestStretchNotWriting) {
-							this.longestStretchNotWriting = secondsSinceLastWord
-						}
-						this.totalTimeNotWriting += secondsSinceLastWord
-					} else if (secondsSinceLastWord >= 60 && !this.redNoticeShown) {
+					} else if (msSinceLastWord >= 60 * 1000 && !this.redNoticeShown) {
 						new Notice(this.settings.redNoticeText)
 						this.redNoticeShown = true
 						status = 'RED'
 						this.redNoticeCount += 1
-						if (secondsSinceLastWord > this.longestStretchNotWriting) {
-							this.longestStretchNotWriting = secondsSinceLastWord
-						}
-						this.totalTimeNotWriting += secondsSinceLastWord
-					} else if(secondsSinceLastWord < 10) {
+					} else if(msSinceLastWord < 10 * 1000) {
 						this.yellowNoticeShown = false
 						this.redNoticeShown = false
 						status = 'GREEN'
-						if (secondsSinceLastWord > this.longestStretchNotWriting) {
-							this.longestStretchNotWriting = secondsSinceLastWord
-						}
-						this.totalTimeNotWriting += secondsSinceLastWord
 					}
 
 					// if (this.app.workspace.getActiveViewOfType(MarkdownView)) {
@@ -205,13 +185,13 @@ export default class WordSprintPlugin extends Plugin {
 					// 			ch: timerPosition.ch + timerLine.length
 					// 		} as EditorPosition
 					//
-					// 		editor.replaceRange(`#sprint: ${this.secondsToMMSS(secondsLeft)} left - ${this.getWordCountDisplay()} words written - ${status}`, timerPosition, endOfTimerPosition)
+					// 		editor.replaceRange(`#sprint: ${secondsToMMSS(secondsLeft)} left - ${this.getWordCountDisplay()} words written - ${status}`, timerPosition, endOfTimerPosition)
 					// 	}
 					// }
 
-					this.statusBarItemEl.setText(`Word Sprint - ${this.secondsToMMSS(secondsLeft)} left - ${this.getWordCountDisplay()} words written - ${status}`)
+					this.statusBarItemEl.setText(`Word Sprint - ${secondsToMMSS(msLeft / 1000)} left - ${this.getWordCountDisplay()} words written - ${status}`)
 
-					if (secondsLeft <= 0 && this.sprintStarted) {
+					if (msLeft <= 0 && this.sprintStarted) {
 						window.clearInterval(this.sprintInterval)
 						this.statusBarItemEl.setText('')
 						this.sprintStarted = false
@@ -249,142 +229,11 @@ export default class WordSprintPlugin extends Plugin {
 		}
 	}
 
-	//Credit: better-word-count by Luke Leppan (https://github.com/lukeleppan/better-word-count)
-	getWordCount(text: string) {
-		let words: number = 0;
-
-		const matches = text.match(
-			/[a-zA-Z0-9_\u0392-\u03c9\u00c0-\u00ff\u0600-\u06ff]+|[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/gm
-		);
-
-		if (matches) {
-			for (let i = 0; i < matches.length; i++) {
-				if (matches[i].charCodeAt(0) > 19968) {
-					words += matches[i].length;
-				} else {
-					words += 1;
-				}
-			}
-		}
-
-		return words;
-	}
-
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-	}
-}
-
-class EndOfSprintStatsModal extends Modal {
-	plugin : WordSprintPlugin;
-
-	constructor(app: App, plugin: WordSprintPlugin) {
-		super(app);
-		this.plugin = plugin
-	}
-
-	onOpen() {
-		let {contentEl} = this;
-
-		contentEl.createEl('h2', {text: 'Word Sprint Stats'})
-
-		const averageWordsPerMinute = this.plugin.wordsPerMinute.reduce((total: number, amount: WordsPerMinute, index: number, array: WordsPerMinute[]) => {
-			total += amount.now
-			return total / array.length
-		}, 0)
-
-		new Setting(contentEl)
-			.setName("Total Words Written")
-			.addText((text) => {
-				text.setValue(`${this.plugin.getWordCountDisplay()}`)
-				text.setDisabled(true)
-			})
-		new Setting(contentEl)
-			.setName("Average Words Per Minute")
-			.addText((text) => {
-				text.setValue(`${numeral(averageWordsPerMinute).format('0')}`)
-				text.setDisabled(true)
-			})
-		new Setting(contentEl)
-			.setName("Yellow Notices")
-			.addText((text) => {
-				text.setValue(`${this.plugin.yellowNoticeCount}`)
-				text.setDisabled(true)
-			})
-		new Setting(contentEl)
-			.setName("Red Notices")
-			.addText((text) => {
-				text.setValue(`${this.plugin.redNoticeCount}`)
-				text.setDisabled(true)
-			})
-		new Setting(contentEl)
-			.setName("Longest Stretch Not Writing")
-			.addText((text) => {
-				text.setValue(`${Math.ceil(this.plugin.longestStretchNotWriting)} seconds`)
-				text.setDisabled(true)
-			})
-		new Setting(contentEl)
-			.setName("Total Time Not Writing")
-			.addText((text) => {
-				text.setValue(`${Math.ceil(this.plugin.totalTimeNotWriting)} seconds`)
-				text.setDisabled(true)
-			})
-	}
-
-	onClose() {
-		let {contentEl} = this;
-		contentEl.empty();
-	}
-}
-
-class WordSprintSettingsTab extends PluginSettingTab {
-	plugin: WordSprintPlugin;
-
-	constructor(app: App, plugin: WordSprintPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	display(): void {
-		let {containerEl} = this;
-
-		containerEl.empty();
-
-		containerEl.createEl('h2', {text: 'Word Sprint Settings'});
-
-		new Setting(containerEl)
-			.setName('Sprint Length')
-			.setDesc('(in minutes)')
-			.addText(text => text
-				.setPlaceholder('25')
-				.setValue(`${this.plugin.settings.sprintLength}`)
-				.onChange(async (value) => {
-					this.plugin.settings.sprintLength = Number(value)
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName('First notice when not writing')
-			.setDesc('(for 10 seconds)')
-			.addText(text => text
-				.setValue(`${this.plugin.settings.yellowNoticeText}`)
-				.onChange(async (value) => {
-					this.plugin.settings.yellowNoticeText = value
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName('Second notice when not writing')
-			.setDesc('(for 60 seconds)')
-			.addText(text => text
-				.setValue(`${this.plugin.settings.redNoticeText}`)
-				.onChange(async (value) => {
-					this.plugin.settings.redNoticeText = value
-					await this.plugin.saveSettings();
-				}));
 	}
 }
