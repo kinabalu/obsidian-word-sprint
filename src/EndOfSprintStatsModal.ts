@@ -1,6 +1,7 @@
 import {App, Modal, Setting} from "obsidian";
 import numeral from "numeral";
 import {SprintRunStat} from "./SprintRun";
+import {secondsToHumanize} from "./utils";
 
 export default class EndOfSprintStatsModal extends Modal {
 	sprintRunStat : SprintRunStat
@@ -15,6 +16,12 @@ export default class EndOfSprintStatsModal extends Modal {
 
 		contentEl.createEl('h2', {text: 'Word Sprint Stats'})
 
+		new Setting(contentEl)
+			.setName("Sprint Length")
+			.addText((text) => {
+				text.setValue(`${secondsToHumanize(this.sprintRunStat.sprintLength * 60)}`)
+				text.setDisabled(true)
+			})
 		new Setting(contentEl)
 			.setName("Total Words Written")
 			.addText((text) => {
@@ -42,13 +49,13 @@ export default class EndOfSprintStatsModal extends Modal {
 		new Setting(contentEl)
 			.setName("Longest Stretch Not Writing")
 			.addText((text) => {
-				text.setValue(`${this.sprintRunStat.longestStretchNotWriting} seconds`)
+				text.setValue(`${secondsToHumanize(this.sprintRunStat.longestStretchNotWriting)}`)
 				text.setDisabled(true)
 			})
 		new Setting(contentEl)
 			.setName("Total Time Not Writing")
 			.addText((text) => {
-				text.setValue(`${this.sprintRunStat.totalTimeNotWriting} seconds`)
+				text.setValue(`${secondsToHumanize(this.sprintRunStat.totalTimeNotWriting)}`)
 				text.setDisabled(true)
 			})
 	}

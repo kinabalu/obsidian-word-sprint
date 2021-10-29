@@ -28,6 +28,15 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
+			.setName('Notices when not writing')
+			.setDesc('default is on, provide helpful notices when you are not writing')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showLagNotices)
+				.onChange(async (value: boolean) => {
+					this.plugin.settings.showLagNotices = value
+					await this.plugin.saveSettings()
+				}))
+		new Setting(containerEl)
 			.setName('First notice when not writing')
 			.setDesc('(for 10 seconds)')
 			.addText(text => text

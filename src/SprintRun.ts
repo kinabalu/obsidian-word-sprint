@@ -4,18 +4,21 @@ import {getWordCount, secondsToMMSS} from "./utils";
 import {v4 as uuidv4} from 'uuid'
 
 export interface SprintRunStat {
+	sprintLength: number;
 	totalWordsWritten: number;
 	averageWordsPerMinute: number;
 	yellowNotices: number;
 	redNotices: number;
 	longestStretchNotWriting: number;
 	totalTimeNotWriting: number;
+	elapsedMilliseconds: number;
 }
 
 export default class SprintRun {
 
 	id : string = uuidv4()
 
+	rand : number;
 	sprintLength : number = 25
 	sprintLengthInMS : number = this.sprintLength * 60 * 1000
 
@@ -42,9 +45,17 @@ export default class SprintRun {
 	elapsedMilliseconds : number = 0
 	millisecondsLeft : number = 0
 
+	status : string = "GREEN"
+
+	private endOfSprintCallback : (sprintRunStat : SprintRunStat) => void
+
 	constructor(sprintLength : number) {
 		this.sprintLength = sprintLength
 		this.sprintLengthInMS = this.sprintLength * 60 * 1000
+	}
+
+	updateSprintLength(sprintLength : number) {
+		this.sprintLength = sprintLength
 	}
 
 	getWordCountDisplay() : number {
@@ -80,6 +91,7 @@ export default class SprintRun {
 	}
 
 	startSprint(previousWordCount : number, update : (status : string, statusChanged : boolean) => void, endOfSprintCallback : (sprintRunStat : SprintRunStat) => void): number {
+		this.endOfSprintCallback = endOfSprintCallback
 		this.previousWordCount = previousWordCount
 		let status = 'GREEN'
 		const now = Date.now()
@@ -103,6 +115,7 @@ export default class SprintRun {
 			const currentNow = Date.now()
 			this.elapsedMilliseconds = currentNow - now
 
+			this.rand = Math.floor(Math.random() * (101));
 			this.millisecondsLeft = this.sprintLengthInMS - this.elapsedMilliseconds
 
 			const msSinceLastWord = Date.now() - this.lastWordTime
@@ -124,21 +137,24 @@ export default class SprintRun {
 				statusChanged = true
 			} else if (msSinceLastWord >= 60 * 1000 && !this.redNoticeShown) {
 				this.redNoticeShown = true
-				status = 'RED'
+				this.status = 'RED'
 				this.redNoticeCount += 1
 				statusChanged = true
-			} else if(msSinceLastWord < 10 * 1000 && status !== 'GREEN') {
+			} else if(msSinceLastWord < 10 * 1000 && this.status !== 'GREEN') {
 				this.yellowNoticeShown = false
 				this.redNoticeShown = false
-				status = 'GREEN'
+				this.status = 'GREEN'
 				statusChanged = true
 			}
 
-			update(status, statusChanged)
+			update(this.status, statusChanged)
 
 			if (this.millisecondsLeft <= 0 && this.sprintStarted) {
 				this.sprintStarted = false
 				window.clearInterval(this.sprintInterval)
+
+				// DEBUG
+				console.log(this.wordsPerMinute)
 				endOfSprintCallback(this.getStats())
 			}
 		}, 1000)
@@ -150,10 +166,16 @@ export default class SprintRun {
 	 * Stop this sprint and return the latest stats
 	 */
 	stopSprint(): SprintRunStat {
-		this.sprintStarted = false
-		window.clearInterval(this.sprintInterval)
+		if (this.sprintStarted) {
+			const stats = this.getStats()
 
-		return this.getStats()
+			this.endOfSprintCallback(stats)
+			this.sprintStarted = false
+			window.clearInterval(this.sprintInterval)
+
+			return stats
+		}
+		return null
 	}
 
 	getStats() : SprintRunStat {
@@ -163,12 +185,14 @@ export default class SprintRun {
 		}, 0)
 
 		return {
+			sprintLength: this.sprintLength,
 			totalWordsWritten: this.getWordCountDisplay(),
 			averageWordsPerMinute: averageWordsPerMinute,
 			yellowNotices: this.yellowNoticeCount,
 			redNotices: this.redNoticeCount,
 			longestStretchNotWriting: Math.ceil(this.longestStretchNotWriting / 1000),
-			totalTimeNotWriting: Math.ceil(this.totalTimeNotWriting / 1000)
+			totalTimeNotWriting: Math.ceil(this.totalTimeNotWriting / 1000),
+			elapsedMilliseconds: this.elapsedMilliseconds,
 		} as SprintRunStat
 	}
 }

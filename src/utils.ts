@@ -25,6 +25,24 @@ export function getWordCount(text: string) {
 	return words;
 }
 
+export function secondsToHumanize(seconds : number) {
+	const minutes = Math.floor(seconds / 60)
+	const secondsForFormatting = Math.ceil(seconds % 60)
+
+	let text : string = ''
+
+	if (seconds > 60) {
+		text += `${numeral(minutes).format('0')} minute${minutes > 1 ? 's' : ''}`
+	}
+	if (seconds % 60 > 0) {
+		if (seconds > 60) {
+			text += ' '
+		}
+		text += `${numeral(secondsForFormatting).format('0')} second${secondsForFormatting > 1 ? 's' : ''}`
+	}
+	return text
+}
+
 export function secondsToMMSS(seconds : number) {
 	const minutes = Math.floor(seconds / 60)
 	const secondsForFormatting = Math.ceil(seconds % 60)
