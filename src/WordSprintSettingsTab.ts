@@ -19,13 +19,15 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName('Sprint Length')
 			.setDesc('(in minutes)')
-			.addText(text => text
-				.setPlaceholder('25')
-				.setValue(`${this.plugin.settings.sprintLength}`)
-				.onChange(async (value) => {
-					this.plugin.settings.sprintLength = Number(value)
-					await this.plugin.saveSettings();
-				}));
+			.addText((text) => {
+				text.inputEl.type = 'number'
+				text.setPlaceholder('25')
+				text.setValue(`${this.plugin.settings.sprintLength}`)
+					.onChange(async (value) => {
+						this.plugin.settings.sprintLength = Number(value)
+						await this.plugin.saveSettings();
+					})
+			})
 
 		new Setting(containerEl)
 			.setName('Notices when not writing')
@@ -50,13 +52,15 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName('Receive first notice after')
 			.setDesc(`(in seconds)`)
-			.addText(text => text
-				.setValue(`${this.plugin.settings.yellowNoticeTimeout}`)
-				.onChange(async (value) => {
-					this.plugin.settings.yellowNoticeTimeout = Number(value)
-					await this.plugin.saveSettings();
-				}));
-
+			.addText((text) => {
+				text.setPlaceholder('10')
+				text.setValue(`${this.plugin.settings.yellowNoticeTimeout}`)
+					.onChange(async (value) => {
+						this.plugin.settings.yellowNoticeTimeout = Number(value)
+						await this.plugin.saveSettings();
+					})
+				text.inputEl.type = 'number'
+			})
 		new Setting(containerEl)
 			.setName('Second notice when not writing')
 			.setDesc(`(after ${this.plugin.settings.yellowNoticeTimeout + this.plugin.settings.redNoticeTimeout} seconds)`)
@@ -70,11 +74,14 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName('Receive second notice after')
 			.setDesc(`(in seconds)`)
-			.addText(text => text
-				.setValue(`${this.plugin.settings.redNoticeTimeout}`)
-				.onChange(async (value) => {
-					this.plugin.settings.redNoticeTimeout = Number(value)
-					await this.plugin.saveSettings();
-				}));
+			.addText((text) => {
+				text.setPlaceholder('50')
+				text.setValue(`${this.plugin.settings.redNoticeTimeout}`)
+					.onChange(async (value) => {
+						this.plugin.settings.redNoticeTimeout = Number(value)
+						await this.plugin.saveSettings();
+					})
+				text.inputEl.type = 'number'
+			})
 	}
 }
