@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-word-sprint",
 	"version": "0.0.9",
-	"description": "Word Sprint for Obsidian inspired by discussions in NANOWRIMO 2021 in creative channel on Discord",
+	"description": "Word Sprint for Obsidian plugin for your writing projects like Nanowrimo",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
