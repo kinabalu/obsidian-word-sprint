@@ -20,7 +20,9 @@ import StatView, {STAT_VIEW_TYPE} from "./src/StatView";
 const DEFAULT_SETTINGS: WordSprintSettings = {
 	sprintLength: 25,
 	showLagNotices: true,
+	yellowNoticeTimeout: 10,
 	yellowNoticeText: "Keep on writing, this is a sprint!",
+	redNoticeTimeout: 50,
 	redNoticeText: "Enjoy that break, get back to writing when you're back",
 }
 
@@ -37,7 +39,7 @@ export default class WordSprintPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		this.theSprint = new SprintRun(this.settings.sprintLength)
+		this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 
 		this.registerView(
 			STAT_VIEW_TYPE,
@@ -116,9 +118,10 @@ export default class WordSprintPlugin extends Plugin {
 
 		if (this.theSprint.isComplete()) {
 			this.sprintHistory.push(this.theSprint.getStats())
-			this.theSprint = new SprintRun(this.settings.sprintLength)
+			this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 		} else {
 			this.theSprint.updateSprintLength(this.settings.sprintLength)
+			this.theSprint.updateNoticeTimeout(this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 		}
 
 		let previousWordCount = 0
