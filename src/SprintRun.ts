@@ -56,6 +56,7 @@ export default class SprintRun {
 
 	updateSprintLength(sprintLength : number) {
 		this.sprintLength = sprintLength
+		this.sprintLengthInMS = this.sprintLength * 60 * 1000
 	}
 
 	getWordCountDisplay() : number {

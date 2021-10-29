@@ -28,12 +28,12 @@ export default class EndOfSprintStatsModal extends Modal {
 				text.setValue(`${this.sprintRunStat.totalWordsWritten}`)
 				text.setDisabled(true)
 			})
-		new Setting(contentEl)
-			.setName("Average Words Per Minute")
-			.addText((text) => {
-				text.setValue(`${numeral(this.sprintRunStat.averageWordsPerMinute).format('0')}`)
-				text.setDisabled(true)
-			})
+		// new Setting(contentEl)
+		// 	.setName("Average Words Per Minute")
+		// 	.addText((text) => {
+		// 		text.setValue(`${numeral(this.sprintRunStat.averageWordsPerMinute).format('0')}`)
+		// 		text.setDisabled(true)
+		// 	})
 		new Setting(contentEl)
 			.setName("Yellow Notices")
 			.addText((text) => {
@@ -52,12 +52,12 @@ export default class EndOfSprintStatsModal extends Modal {
 				text.setValue(`${secondsToHumanize(this.sprintRunStat.longestStretchNotWriting)}`)
 				text.setDisabled(true)
 			})
-		new Setting(contentEl)
-			.setName("Total Time Not Writing")
-			.addText((text) => {
-				text.setValue(`${secondsToHumanize(this.sprintRunStat.totalTimeNotWriting)}`)
-				text.setDisabled(true)
-			})
+		// new Setting(contentEl)
+		// 	.setName("Total Time Not Writing")
+		// 	.addText((text) => {
+		// 		text.setValue(`${secondsToHumanize(this.sprintRunStat.totalTimeNotWriting)}`)
+		// 		text.setDisabled(true)
+		// 	})
 	}
 
 	onClose() {
