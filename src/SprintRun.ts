@@ -52,14 +52,25 @@ export default class SprintRun {
 
 	private endOfSprintCallback : (sprintRunStat : SprintRunStat) => void
 
-	constructor(sprintLength : number) {
+	yellowNoticeTimeout : number = 10
+	redNoticeTimeout : number = 50
+
+	constructor(sprintLength : number, yellowNoticeTimeout : number, redNoticeTimeout : number) {
 		this.sprintLength = sprintLength
 		this.sprintLengthInMS = this.sprintLength * 60 * 1000
+
+		this.yellowNoticeTimeout = yellowNoticeTimeout
+		this.redNoticeTimeout = redNoticeTimeout
 	}
 
 	updateSprintLength(sprintLength : number) {
 		this.sprintLength = sprintLength
 		this.sprintLengthInMS = this.sprintLength * 60 * 1000
+	}
+
+	updateNoticeTimeout(yellowNoticeTimeout : number, redNoticeTimeout : number) {
+		this.yellowNoticeTimeout = yellowNoticeTimeout
+		this.redNoticeTimeout = redNoticeTimeout
 	}
 
 	getWordCountDisplay() : number {
@@ -138,17 +149,17 @@ export default class SprintRun {
 			}
 
 			let statusChanged = false
-			if (msSinceLastWord >= 10 * 1000 && !this.yellowNoticeShown) {
+			if (msSinceLastWord >= this.yellowNoticeTimeout * 1000 && !this.yellowNoticeShown) {
 				this.yellowNoticeShown = true
 				this.status = 'YELLOW'
 				this.yellowNoticeCount += 1
 				statusChanged = true
-			} else if (msSinceLastWord >= 60 * 1000 && !this.redNoticeShown) {
+			} else if (msSinceLastWord >= (this.yellowNoticeTimeout + this.redNoticeTimeout) * 1000 && !this.redNoticeShown) {
 				this.redNoticeShown = true
 				this.status = 'RED'
 				this.redNoticeCount += 1
 				statusChanged = true
-			} else if(msSinceLastWord < 10 * 1000 && this.status !== 'GREEN') {
+			} else if(msSinceLastWord < this.yellowNoticeTimeout * 1000 && this.status !== 'GREEN') {
 				this.yellowNoticeShown = false
 				this.redNoticeShown = false
 				this.status = 'GREEN'

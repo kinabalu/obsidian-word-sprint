@@ -36,9 +36,10 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 					this.plugin.settings.showLagNotices = value
 					await this.plugin.saveSettings()
 				}))
+
 		new Setting(containerEl)
 			.setName('First notice when not writing')
-			.setDesc('(after 10 seconds)')
+			.setDesc(`(after ${this.plugin.settings.yellowNoticeTimeout} seconds)`)
 			.addText(text => text
 				.setValue(`${this.plugin.settings.yellowNoticeText}`)
 				.onChange(async (value) => {
@@ -47,12 +48,32 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
+			.setName('Receive first notice after')
+			.setDesc(`(in seconds)`)
+			.addText(text => text
+				.setValue(`${this.plugin.settings.yellowNoticeTimeout}`)
+				.onChange(async (value) => {
+					this.plugin.settings.yellowNoticeTimeout = Number(value)
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
 			.setName('Second notice when not writing')
-			.setDesc('(after 60 seconds)')
+			.setDesc(`(after ${this.plugin.settings.yellowNoticeTimeout + this.plugin.settings.redNoticeTimeout} seconds)`)
 			.addText(text => text
 				.setValue(`${this.plugin.settings.redNoticeText}`)
 				.onChange(async (value) => {
 					this.plugin.settings.redNoticeText = value
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Receive second notice after')
+			.setDesc(`(in seconds)`)
+			.addText(text => text
+				.setValue(`${this.plugin.settings.redNoticeTimeout}`)
+				.onChange(async (value) => {
+					this.plugin.settings.redNoticeTimeout = Number(value)
 					await this.plugin.saveSettings();
 				}));
 	}
