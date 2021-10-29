@@ -41,7 +41,7 @@ export default class WordSprintPlugin extends Plugin {
 
 		this.registerView(
 			STAT_VIEW_TYPE,
-			(leaf) => new StatView(this.theSprint, this, leaf),
+			(leaf) => new StatView(this, leaf),
 		)
 
 		this.addRibbonIcon("pencil", "Activate Word Sprint Leaf", () => {
@@ -147,7 +147,6 @@ export default class WordSprintPlugin extends Plugin {
 			}
 			this.statusBarItemEl.setText(`Word Sprint - ${miniStats.secondsLeft} left - ${miniStats.wordCount} words written`)
 		},(sprintRunStat : SprintRunStat) => {
-			console.dir(this.sprintHistory)
 			this.sprintHistory.push(this.theSprint.getStats())
 			this.theSprint = new SprintRun(this.settings.sprintLength)
 

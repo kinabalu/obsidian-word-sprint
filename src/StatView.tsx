@@ -1,21 +1,18 @@
 import {ItemView, WorkspaceLeaf} from "obsidian";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { SprintRunContext, PluginContext } from "./context";
+import { PluginContext } from "./context";
 import { StatReactView } from './StatReactView'
-import SprintRun from "./SprintRun";
 import WordSprintPlugin from "../main";
 
 export const STAT_VIEW_TYPE = "stat-view";
 
 export default class StatView extends ItemView {
-	sprintRun: SprintRun;
 	plugin: WordSprintPlugin
 
-	constructor(sprintRun: SprintRun, plugin: WordSprintPlugin, leaf: WorkspaceLeaf) {
+	constructor(plugin: WordSprintPlugin, leaf: WorkspaceLeaf) {
 		super(leaf);
 
-		this.sprintRun = sprintRun
 		this.plugin = plugin
 	}
 
@@ -34,9 +31,7 @@ export default class StatView extends ItemView {
 	async onOpen() {
 		ReactDOM.render(
 			<PluginContext.Provider value={this.plugin}>
-				<SprintRunContext.Provider value={this.sprintRun}>
-					<StatReactView />
-				</SprintRunContext.Provider>
+				<StatReactView />
 			</PluginContext.Provider>,
 			this.containerEl.children[1]
 		)
