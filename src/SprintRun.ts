@@ -132,7 +132,7 @@ export default class SprintRun {
 			let statusChanged = false
 			if (msSinceLastWord >= 10 * 1000 && !this.yellowNoticeShown) {
 				this.yellowNoticeShown = true
-				status = 'YELLOW'
+				this.status = 'YELLOW'
 				this.yellowNoticeCount += 1
 				statusChanged = true
 			} else if (msSinceLastWord >= 60 * 1000 && !this.redNoticeShown) {
