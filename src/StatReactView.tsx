@@ -29,12 +29,51 @@ export const StatReactView = () => {
 
 	const [isSprintStarted, setIsSprintStarted] = React.useState(false)
 
+	const renderBackgroundColorStatus = (status : string) => {
+		switch(status) {
+			case 'GREEN':
+				return 'green'
+			case 'RED':
+				return 'red'
+			case 'YELLOW':
+				return 'gold'
+			default:
+				return 'green'
+		}
+	}
+
+	const renderForegroundColorStatus = (status : string) => {
+		switch(status) {
+			case 'GREEN':
+				return 'white'
+			case 'RED':
+				return 'white'
+			case 'YELLOW':
+				return 'black'
+			default:
+				return 'white'
+		}
+	}
+
+	const renderStatusName = (status : string) => {
+		switch(status) {
+			case 'GREEN':
+				return 'Good'
+			case 'RED':
+				return 'Danger'
+			case 'YELLOW':
+				return 'Warning'
+			default:
+				return 'Good'
+		}
+	}
+
 	return (
 		<div align="center">
 			<h4>Word Sprint</h4>
 			{ isSprintStarted && (
 				<>
-					<div style={{ margin: '2rem', padding: '0.5rem', backgroundColor: status}}>STATUS</div>
+					<div style={{ margin: '2rem', padding: '0.5rem', color: renderForegroundColorStatus(status), backgroundColor: renderBackgroundColorStatus(status)}}>STATUS: {renderStatusName(status)}</div>
 					<div style={{ margin: '2rem'}}>{secondsLeft} left</div>
 					<div style={{ margin: '2rem'}}>{wordCount} words written</div>
 				</>

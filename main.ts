@@ -35,7 +35,6 @@ export default class WordSprintPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		// TODO add ability to update sprint length based on settings
 		this.theSprint = new SprintRun(this.settings.sprintLength)
 
 		this.registerView(
@@ -105,6 +104,8 @@ export default class WordSprintPlugin extends Plugin {
 			new Notice("Sprint already started! Please stop current sprint if you'd like to reset")
 			return
 		}
+
+		this.theSprint.updateSprintLength(this.settings.sprintLength)
 
 		let previousWordCount = 0
 		if (this.app.workspace.getActiveViewOfType(MarkdownView)) {
