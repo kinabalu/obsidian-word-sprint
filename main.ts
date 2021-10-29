@@ -32,6 +32,8 @@ export default class WordSprintPlugin extends Plugin {
 	sprintInterval : number
 	theSprint : SprintRun
 
+	sprintHistory : SprintRunStat[] = []
+
 	async onload() {
 		await this.loadSettings();
 
@@ -53,7 +55,7 @@ export default class WordSprintPlugin extends Plugin {
 			id: 'insert-last-word-sprint-stats',
 			name: 'Insert Last Word Sprint Stats',
 			editorCallback: async (editor: Editor) => {
-				let statsText : string;
+				let statsText : string = '';
 
 				if (this.theSprint && this.theSprint.isStarted()) {
 					new Notice("Sprint still going, but here's the stats as of this moment")
@@ -61,7 +63,11 @@ export default class WordSprintPlugin extends Plugin {
 
 				const stats = this.theSprint.getStats()
 
-				statsText = `Sprint Length: ${secondsToHumanize(stats.sprintLength * 60)}\n`
+				if ((stats.sprintLength * 60) > stats.elapsedSprintLength) {
+					statsText = `Sprint Length: ${secondsToHumanize(stats.elapsedSprintLength)} of ${secondsToHumanize(stats.sprintLength * 60)}\n`
+				} else {
+					statsText = `Sprint Length: ${secondsToHumanize(stats.sprintLength * 60)}\n`
+				}
 				statsText += `Total Words Written: ${stats.totalWordsWritten}\n`
 				// statsText += `Average Words Per Minute: ${numeral(stats.averageWordsPerMinute).format('0')}\n`
 				statsText += `Yellow Notices: ${stats.yellowNotices}\n`
@@ -85,6 +91,9 @@ export default class WordSprintPlugin extends Plugin {
 			name: 'Stop Word Sprint',
 			callback: () => {
 				if (this.theSprint && this.theSprint.isStarted()) {
+					this.sprintHistory.push(this.theSprint.getStats())
+					this.theSprint = new SprintRun(this.settings.sprintLength)
+
 					this.statusBarItemEl.setText('')
 					const sprintRunStat : SprintRunStat = this.theSprint.stopSprint()
 
@@ -105,7 +114,12 @@ export default class WordSprintPlugin extends Plugin {
 			return
 		}
 
-		this.theSprint.updateSprintLength(this.settings.sprintLength)
+		if (this.theSprint.isComplete()) {
+			this.sprintHistory.push(this.theSprint.getStats())
+			this.theSprint = new SprintRun(this.settings.sprintLength)
+		} else {
+			this.theSprint.updateSprintLength(this.settings.sprintLength)
+		}
 
 		let previousWordCount = 0
 		if (this.app.workspace.getActiveViewOfType(MarkdownView)) {
@@ -133,6 +147,10 @@ export default class WordSprintPlugin extends Plugin {
 			}
 			this.statusBarItemEl.setText(`Word Sprint - ${miniStats.secondsLeft} left - ${miniStats.wordCount} words written`)
 		},(sprintRunStat : SprintRunStat) => {
+			console.dir(this.sprintHistory)
+			this.sprintHistory.push(this.theSprint.getStats())
+			this.theSprint = new SprintRun(this.settings.sprintLength)
+
 			window.clearInterval(this.sprintInterval)
 			this.statusBarItemEl.setText('')
 			new Notice(`Word Sprint Complete! Congratulations! Total words written: ${sprintRunStat.totalWordsWritten}`)

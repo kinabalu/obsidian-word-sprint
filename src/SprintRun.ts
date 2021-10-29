@@ -5,6 +5,7 @@ import {v4 as uuidv4} from 'uuid'
 
 export interface SprintRunStat {
 	sprintLength: number;
+	elapsedSprintLength: number;
 	totalWordsWritten: number;
 	averageWordsPerMinute: number;
 	yellowNotices: number;
@@ -24,6 +25,8 @@ export default class SprintRun {
 
 	sprintInterval : number
 	sprintStarted : boolean = false
+	sprintComplete : boolean = false
+
 	lastWordTime : number = 0
 	previousWordCount : number
 	wordCount : number = 0
@@ -84,6 +87,10 @@ export default class SprintRun {
 		return this.sprintStarted
 	}
 
+	isComplete(): boolean {
+		return this.sprintComplete
+	}
+
 	getMiniStats() {
 		return {
 			secondsLeft: secondsToMMSS(this.millisecondsLeft / 1000),
@@ -94,7 +101,7 @@ export default class SprintRun {
 	startSprint(previousWordCount : number, update : (status : string, statusChanged : boolean) => void, endOfSprintCallback : (sprintRunStat : SprintRunStat) => void): number {
 		this.endOfSprintCallback = endOfSprintCallback
 		this.previousWordCount = previousWordCount
-		let status = 'GREEN'
+
 		const now = Date.now()
 		this.lastWordTime = Date.now()
 		this.sprintStarted = true
@@ -152,6 +159,7 @@ export default class SprintRun {
 
 			if (this.millisecondsLeft <= 0 && this.sprintStarted) {
 				this.sprintStarted = false
+				this.sprintComplete = true
 				window.clearInterval(this.sprintInterval)
 
 				// DEBUG
@@ -172,6 +180,7 @@ export default class SprintRun {
 
 			this.endOfSprintCallback(stats)
 			this.sprintStarted = false
+			this.sprintComplete = true
 			window.clearInterval(this.sprintInterval)
 
 			return stats
@@ -187,6 +196,7 @@ export default class SprintRun {
 
 		return {
 			sprintLength: this.sprintLength,
+			elapsedSprintLength: Math.floor(this.elapsedMilliseconds / 1000),
 			totalWordsWritten: this.getWordCountDisplay(),
 			averageWordsPerMinute: averageWordsPerMinute,
 			yellowNotices: this.yellowNoticeCount,

@@ -38,7 +38,7 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 				}))
 		new Setting(containerEl)
 			.setName('First notice when not writing')
-			.setDesc('(for 10 seconds)')
+			.setDesc('(after 10 seconds)')
 			.addText(text => text
 				.setValue(`${this.plugin.settings.yellowNoticeText}`)
 				.onChange(async (value) => {
@@ -48,7 +48,7 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Second notice when not writing')
-			.setDesc('(for 60 seconds)')
+			.setDesc('(after 60 seconds)')
 			.addText(text => text
 				.setValue(`${this.plugin.settings.redNoticeText}`)
 				.onChange(async (value) => {

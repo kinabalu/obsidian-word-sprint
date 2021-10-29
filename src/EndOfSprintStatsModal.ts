@@ -16,10 +16,17 @@ export default class EndOfSprintStatsModal extends Modal {
 
 		contentEl.createEl('h2', {text: 'Word Sprint Stats'})
 
+		let sprintLengthText : string = ''
+		if ((this.sprintRunStat.sprintLength * 60) > this.sprintRunStat.elapsedSprintLength) {
+			sprintLengthText = `${secondsToHumanize(this.sprintRunStat.elapsedSprintLength)} of ${secondsToHumanize(this.sprintRunStat.sprintLength * 60)}\n`
+		} else {
+			sprintLengthText = `${secondsToHumanize(this.sprintRunStat.sprintLength * 60)}\n`
+		}
+
 		new Setting(contentEl)
 			.setName("Sprint Length")
 			.addText((text) => {
-				text.setValue(`${secondsToHumanize(this.sprintRunStat.sprintLength * 60)}`)
+				text.setValue(sprintLengthText)
 				text.setDisabled(true)
 			})
 		new Setting(contentEl)
