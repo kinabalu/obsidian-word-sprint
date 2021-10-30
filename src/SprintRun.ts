@@ -186,6 +186,7 @@ export default class SprintRun {
 	 * Stop this sprint and return the latest stats
 	 */
 	stopSprint(): SprintRunStat {
+		console.log(`this.sprintStarted: ${this.sprintStarted}`)
 		if (this.sprintStarted) {
 			const stats = this.getStats()
 

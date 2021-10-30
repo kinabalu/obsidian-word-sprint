@@ -5,7 +5,7 @@ import {
 	TFile,
 	MarkdownView,
 	Debouncer,
-	Editor,
+	Editor, normalizePath,
 } from 'obsidian';
 
 import numeral from 'numeral'
@@ -36,8 +36,42 @@ export default class WordSprintPlugin extends Plugin {
 
 	sprintHistory : SprintRunStat[] = []
 
+	async loadStats() {
+		const adapter = this.app.vault.adapter;
+		const dir = this.manifest.dir;
+		const path = normalizePath(`${dir}/stats.json`)
+		let stats : string;
+
+		if (await adapter.exists(path)) {
+			stats = await adapter.read(path)
+
+			try {
+				this.sprintHistory = JSON.parse(stats) as SprintRunStat[]
+			} catch(error) {
+				new Notice("Unable to read stats.json")
+				console.error(error)
+			}
+
+		}
+	}
+
+	async saveStats() {
+		if (this.sprintHistory.length > 0) {
+			const adapter = this.app.vault.adapter;
+			const dir = this.manifest.dir;
+			const path = normalizePath(`${dir}/stats.json`)
+
+			try {
+				await adapter.write(path, JSON.stringify(this.sprintHistory))
+			} catch(error) {
+				new Notice("Unable to write to stats.json file")
+				console.error(error)
+			}
+		}
+	}
+
 	async onload() {
-		await this.loadSettings();
+		await Promise.all([this.loadSettings(), this.loadStats()])
 
 		this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 
@@ -65,6 +99,7 @@ export default class WordSprintPlugin extends Plugin {
 
 				const stats = this.theSprint.getStats()
 
+				console.dir(stats)
 				if ((stats.sprintLength * 60) > stats.elapsedSprintLength) {
 					statsText = `Sprint Length: ${secondsToHumanize(stats.elapsedSprintLength)} of ${secondsToHumanize(stats.sprintLength * 60)}\n`
 				} else {
@@ -93,13 +128,14 @@ export default class WordSprintPlugin extends Plugin {
 			name: 'Stop Word Sprint',
 			callback: () => {
 				if (this.theSprint && this.theSprint.isStarted()) {
-					this.sprintHistory.push(this.theSprint.getStats())
-					this.theSprint = new SprintRun(this.settings.sprintLength)
-
 					this.statusBarItemEl.setText('')
 					const sprintRunStat : SprintRunStat = this.theSprint.stopSprint()
-
 					this.showEndOfSprintStatsModal()
+
+					this.sprintHistory.push(this.theSprint.getStats())
+					this.saveStats()
+					this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
+
 					new Notice(`Word Sprint Cancelled! Total words written: ${sprintRunStat.totalWordsWritten}`)
 				} else {
 					new Notice('No Word Sprint running')
@@ -118,6 +154,7 @@ export default class WordSprintPlugin extends Plugin {
 
 		if (this.theSprint.isComplete()) {
 			this.sprintHistory.push(this.theSprint.getStats())
+			this.saveStats()
 			this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 		} else {
 			this.theSprint.updateSprintLength(this.settings.sprintLength)
@@ -151,7 +188,8 @@ export default class WordSprintPlugin extends Plugin {
 			this.statusBarItemEl.setText(`Word Sprint - ${miniStats.secondsLeft} left - ${miniStats.wordCount} words written`)
 		},(sprintRunStat : SprintRunStat) => {
 			this.sprintHistory.push(this.theSprint.getStats())
-			this.theSprint = new SprintRun(this.settings.sprintLength)
+			this.saveStats()
+			this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 
 			window.clearInterval(this.sprintInterval)
 			this.statusBarItemEl.setText('')
