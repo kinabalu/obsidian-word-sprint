@@ -15,7 +15,6 @@ export default class EndOfSprintStatsModal extends Modal {
 
 		contentEl.createEl('h2', {text: 'Word Sprint Stats'})
 
-		console.dir(this.sprintRunStat)
 		let sprintLengthText : string = ''
 		if ((this.sprintRunStat.sprintLength * 60) > this.sprintRunStat.elapsedSprintLength) {
 			sprintLengthText = `${secondsToHumanize(this.sprintRunStat.elapsedSprintLength)} of ${secondsToHumanize(this.sprintRunStat.sprintLength * 60)}\n`

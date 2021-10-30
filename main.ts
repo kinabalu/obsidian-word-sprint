@@ -5,6 +5,7 @@ import {
 	TFile,
 	MarkdownView,
 	Debouncer,
+	moment,
 	Editor, normalizePath,
 } from 'obsidian';
 
@@ -55,6 +56,14 @@ export default class WordSprintPlugin extends Plugin {
 		}
 	}
 
+	getStartOfToday(): number {
+		return moment().startOf('day').toDate().valueOf()
+	}
+
+	getEndOfToday(): number {
+		return moment().endOf('day').toDate().valueOf()
+	}
+
 	async saveStats() {
 		if (this.sprintHistory.length > 0) {
 			const adapter = this.app.vault.adapter;
@@ -99,7 +108,6 @@ export default class WordSprintPlugin extends Plugin {
 
 				const stats = this.theSprint.getStats()
 
-				console.dir(stats)
 				if ((stats.sprintLength * 60) > stats.elapsedSprintLength) {
 					statsText = `Sprint Length: ${secondsToHumanize(stats.elapsedSprintLength)} of ${secondsToHumanize(stats.sprintLength * 60)}\n`
 				} else {

@@ -5,6 +5,7 @@ import {v4 as uuidv4} from 'uuid'
 
 export interface SprintRunStat {
 	id: string;
+	name: string;
 	created: number;
 	sprintLength: number;
 	elapsedSprintLength: number;
@@ -178,7 +179,7 @@ export default class SprintRun {
 				window.clearInterval(this.sprintInterval)
 
 				// DEBUG
-				console.log(this.wordsPerMinute)
+				// console.log(this.wordsPerMinute)
 				endOfSprintCallback(this.getStats())
 			}
 		}, 1000)
@@ -190,7 +191,6 @@ export default class SprintRun {
 	 * Stop this sprint and return the latest stats
 	 */
 	stopSprint(): SprintRunStat {
-		console.log(`this.sprintStarted: ${this.sprintStarted}`)
 		if (this.sprintStarted) {
 			const stats = this.getStats()
 
@@ -212,6 +212,7 @@ export default class SprintRun {
 
 		return {
 			id: this.id,
+			name: '',
 			sprintLength: this.sprintLength,
 			elapsedSprintLength: Math.floor(this.elapsedMilliseconds / 1000),
 			totalWordsWritten: this.getWordCountDisplay(),
