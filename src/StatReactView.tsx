@@ -81,40 +81,40 @@ export const StatReactView = () => {
 	}
 
 	return (
-		<div className="main">
+		<div id="wordsprint">
 			{ isSprintStarted && (
 				<>
-					<div style={{ margin: '0.5rem', padding: '0.5rem', color: renderForegroundColorStatus(status), backgroundColor: renderBackgroundColorStatus(status)}}>STATUS: {renderStatusName(status)}</div>
-					<div style={{ margin: '0.5rem'}}>{secondsLeft} left</div>
-					<div style={{ margin: '0.5rem'}}>{wordCount} words written</div>
+					<div className="status" style={{ color: renderForegroundColorStatus(status), backgroundColor: renderBackgroundColorStatus(status)}}>STATUS: {renderStatusName(status)}</div>
+					<div className="secondsLeft">{secondsLeft} left</div>
+					<div className="wordsWritten">{wordCount} words written</div>
 				</>
 			)}
 			{ !isSprintStarted && (
 				<>
-					<div style={{ margin: '0.5rem', padding: '0.5rem', color: renderForegroundColorStatus(null), backgroundColor: renderBackgroundColorStatus(null)}}>STATUS: {renderStatusName(null)}</div>
-					<div style={{ margin: '0.5rem'}}>{secondsToMMSS(plugin.theSprint.sprintLength * 60)} left</div>
+					<div className="sprintStatus" style={{ color: renderForegroundColorStatus(null), backgroundColor: renderBackgroundColorStatus(null)}}>STATUS: {renderStatusName(null)}</div>
+					<div className="secondsLeft">{secondsToMMSS(plugin.theSprint.sprintLength * 60)} left</div>
 				</>
 			)}
-			<div style={{ margin: '0.5rem'}}>
-				<button disabled={isSprintStarted} style={{ backgroundColor: 'green', opacity: isSprintStarted ? 0.4 : 1 }} onClick={() => {plugin.startSprintCommand()}}>Start</button>
-				<button disabled={!isSprintStarted} style={{ backgroundColor: 'red', opacity: isSprintStarted ? 1 : 0.4 }} onClick={() => {plugin.theSprint.stopSprint()}}>Stop</button>
+			<div id="sprintActionPanel">
+				<button className="sprintStart" disabled={isSprintStarted} style={{ opacity: isSprintStarted ? 0.4 : 1 }} onClick={() => {plugin.startSprintCommand()}}>Start</button>
+				<button className="sprintStop"  disabled={!isSprintStarted} style={{ opacity: isSprintStarted ? 1 : 0.4 }} onClick={() => {plugin.theSprint.stopSprint()}}>Stop</button>
 			</div>
 
-			<div id="bottom">
+			<div id="statsPanel">
 				<hr />
 				{totalWordCount > 0 &&
 					<>
-						<div align="center" style={{marginTop: '1rem'}}>
+						<div className="sprintTotalWordCount" align="center">
 							Total Word Count: {totalWordCount + plugin.theSprint.getStats().totalWordsWritten}
 						</div>
-						<div align="center">
+						<div className="sprintDailyWordCount" align="center">
 							Daily Word Count: {dailyWordCount + plugin.theSprint.getStats().totalWordsWritten}
 						</div>
 					</>
 				}
 				{statsAvailable &&
-				<div align="center" style={{margin: '0.5rem'}}>
-					<button style={{ backgroundColor: 'grey' }} onClick={() => {
+				<div id="sprintViewStats" align="center">
+					<button className="viewStats" onClick={() => {
 						plugin.showEndOfSprintStatsModal()
 					}}>View Stats
 					</button>

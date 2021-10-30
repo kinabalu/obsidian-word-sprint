@@ -10,3 +10,51 @@
 	bottom: 0;
 }
 */
+
+#wordsprint .status {
+	margin: 0.5rem;
+	padding: 0.5rem;
+}
+
+#wordsprint .secondsLeft {
+	margin: 0.5rem;
+}
+
+#wordsprint .wordsWritten {
+	margin: 0.5rem;
+}
+
+#wordsprint .sprintStatus {
+	margin: 0.5rem;
+	padding: 0.5rem;
+}
+
+#wordsprint .secondsLeft {
+	margin: 0.5rem;
+}
+
+#wordsprint #sprintActionPanel {
+	margin: 0.5rem;
+}
+
+#wordsprint #sprintActionPanel .sprintStart {
+	margin: 0.5rem;
+	background-color: green;
+}
+
+#wordsprint #sprintActionPanel .sprintStop {
+	margin: 0.5rem;
+	background-color: red;
+}
+
+#wordsprint #statsPanel .sprintTotalWordCount {
+	margin-top: 1rem;
+}
+
+#wordsprint #sprintViewStats {
+	margin: 0.5rem;
+}
+
+#wordsprint #sprintViewStats .viewStats {
+	background-color: grey;
+}
