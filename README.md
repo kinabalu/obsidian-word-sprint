@@ -31,3 +31,9 @@ Two methods and the first one is easier:
 - Create an `obsidian-word-sprint` folder under `.obsidian/plugins` in your vault. Add the
 `main.js`, `manifest.json`, and the `styles.css` files from the
 [latest release](https://github.com/kinabalu/obsidian-word-sprint/releases) to the folder.
+
+## Say Thanks 🙏
+
+If you like this plugin and would like to buy me a coffee, you can!
+
+[<img src="https://cdn.buymeacoffee.com/buttons/v2/default-violet.png" alt="BuyMeACoffee" width="100">](https://www.buymeacoffee.com/andrewlombardi)
