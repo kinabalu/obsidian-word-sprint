@@ -93,14 +93,7 @@ export const StatReactView = () => {
 				<button disabled={!isSprintStarted} style={{ backgroundColor: 'red', opacity: isSprintStarted ? 1 : 0.4 }} onClick={() => {plugin.theSprint.stopSprint()}}>Stop</button>
 			</div>
 
-			{statsAvailable &&
-				<div style={{margin: '0.5rem'}}>
-					<button style={{ backgroundColor: 'grey' }} onClick={() => {
-						plugin.showEndOfSprintStatsModal()
-					}}>View Stats
-					</button>
-				</div>
-			}
+			<hr />
 			{totalWordCount > 0 &&
 				<>
 					<div align="center" style={{marginTop: '1rem'}}>
@@ -110,6 +103,14 @@ export const StatReactView = () => {
 						Daily Word Count: {dailyWordCount + plugin.theSprint.getStats().totalWordsWritten}
 					</div>
 				</>
+			}
+			{statsAvailable &&
+			<div align="center" style={{margin: '0.5rem'}}>
+				<button style={{ backgroundColor: 'grey' }} onClick={() => {
+					plugin.showEndOfSprintStatsModal()
+				}}>View Stats
+				</button>
+			</div>
 			}
 		</div>
 	)
