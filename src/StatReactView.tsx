@@ -10,10 +10,7 @@ export const StatReactView = () => {
 		const miniStats = plugin.theSprint.getMiniStats()
 		setStatsAvailable(plugin.theSprint.getStats() !== null)
 
-		const startOfToday = plugin.getStartOfToday()
-		const endOfToday = plugin.getEndOfToday()
-
-		setDailyWordCount(plugin.sprintHistory.filter((hist) => hist.created >= startOfToday && hist.created <= endOfToday).reduce((total: number, amount: SprintRunStat,) => {
+		setDailyWordCount(plugin.sprintHistory.filter((hist) => plugin.inRange(hist.created)).reduce((total: number, amount: SprintRunStat,) => {
 			return total + amount.totalWordsWritten
 		}, 0))
 		setWordCount(miniStats.wordCount)

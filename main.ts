@@ -56,12 +56,9 @@ export default class WordSprintPlugin extends Plugin {
 		}
 	}
 
-	getStartOfToday(): number {
-		return moment().startOf('day').toDate().valueOf()
-	}
-
-	getEndOfToday(): number {
-		return moment().endOf('day').toDate().valueOf()
+	inRange(now : number) : boolean {
+		return now >= moment().startOf('day').toDate().valueOf()
+			&& now <= moment().endOf('day').toDate().valueOf()
 	}
 
 	async saveStats() {

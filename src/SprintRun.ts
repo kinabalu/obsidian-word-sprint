@@ -1,6 +1,8 @@
 import { WordsPerMinute } from "./settings";
 import {getWordCount, secondsToMMSS} from "./utils";
 
+import { moment } from 'obsidian'
+
 import {v4 as uuidv4} from 'uuid'
 
 export interface SprintRunStat {
@@ -118,7 +120,7 @@ export default class SprintRun {
 		this.previousWordCount = previousWordCount
 
 		const now = Date.now()
-		this.created = now
+		this.created = moment.utc().valueOf()
 		this.lastWordTime = now
 		this.sprintStarted = true
 
