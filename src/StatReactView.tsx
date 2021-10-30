@@ -26,6 +26,8 @@ export const StatReactView = () => {
 	}, 1000)
 
 	const [totalWordCount, setTotalWordCount] = React.useState(0)
+	const [dailyWordCount, setDailyWordCount] = React.useState(0)
+
 	const [wordCount, setWordCount] = React.useState(null)
 	const [secondsLeft, setSecondsLeft] = React.useState(null)
 	const [status, setStatus] = React.useState('GREEN')
@@ -94,9 +96,14 @@ export const StatReactView = () => {
 				</div>
 			}
 			{totalWordCount > 0 &&
-				<div align="center" style={{margin: '3rem'}}>
-					Total Word Count: {totalWordCount}
-				</div>
+				<>
+					<div align="center" style={{marginTop: '1rem'}}>
+						Total Word Count: {totalWordCount}
+					</div>
+					<div align="center">
+						Daily Word Count: {totalWordCount}
+					</div>
+				</>
 			}
 		</div>
 	)

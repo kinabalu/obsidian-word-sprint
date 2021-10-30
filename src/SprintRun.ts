@@ -4,6 +4,8 @@ import {getWordCount, secondsToMMSS} from "./utils";
 import {v4 as uuidv4} from 'uuid'
 
 export interface SprintRunStat {
+	id: string;
+	created: number;
 	sprintLength: number;
 	elapsedSprintLength: number;
 	totalWordsWritten: number;
@@ -48,6 +50,7 @@ export default class SprintRun {
 	elapsedMilliseconds : number = 0
 	millisecondsLeft : number = 0
 
+	created : number
 	status : string = "GREEN"
 
 	private endOfSprintCallback : (sprintRunStat : SprintRunStat) => void
@@ -114,7 +117,8 @@ export default class SprintRun {
 		this.previousWordCount = previousWordCount
 
 		const now = Date.now()
-		this.lastWordTime = Date.now()
+		this.created = now
+		this.lastWordTime = now
 		this.sprintStarted = true
 
 		// reset all the stats
@@ -207,6 +211,7 @@ export default class SprintRun {
 		}, 0)
 
 		return {
+			id: this.id,
 			sprintLength: this.sprintLength,
 			elapsedSprintLength: Math.floor(this.elapsedMilliseconds / 1000),
 			totalWordsWritten: this.getWordCountDisplay(),
@@ -216,6 +221,7 @@ export default class SprintRun {
 			longestStretchNotWriting: Math.ceil(this.longestStretchNotWriting / 1000),
 			totalTimeNotWriting: Math.ceil(this.totalTimeNotWriting / 1000),
 			elapsedMilliseconds: this.elapsedMilliseconds,
+			created: this.created,
 		} as SprintRunStat
 	}
 }
