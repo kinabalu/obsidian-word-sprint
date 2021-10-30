@@ -104,16 +104,16 @@ export const StatReactView = () => {
 				<hr />
 				{totalWordCount > 0 &&
 					<>
-						<div className="sprintTotalWordCount" align="center">
+						<div className="sprintTotalWordCount">
 							Total Word Count: {totalWordCount + plugin.theSprint.getStats().totalWordsWritten}
 						</div>
-						<div className="sprintDailyWordCount" align="center">
+						<div className="sprintDailyWordCount">
 							Daily Word Count: {dailyWordCount + plugin.theSprint.getStats().totalWordsWritten}
 						</div>
 					</>
 				}
 				{statsAvailable &&
-				<div id="sprintViewStats" align="center">
+				<div id="sprintViewStats">
 					<button className="viewStats" onClick={() => {
 						plugin.showEndOfSprintStatsModal()
 					}}>View Stats
