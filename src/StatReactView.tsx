@@ -1,6 +1,7 @@
 import * as React from "react"
 import useInterval, {usePlugin} from './hooks'
 import {SprintRunStat} from "./SprintRun";
+import {secondsToMMSS} from "./utils";
 
 export const StatReactView = () => {
 
@@ -49,7 +50,7 @@ export const StatReactView = () => {
 			case 'YELLOW':
 				return 'gold'
 			default:
-				return 'green'
+				return 'grey'
 		}
 	}
 
@@ -75,17 +76,23 @@ export const StatReactView = () => {
 			case 'YELLOW':
 				return 'Warning'
 			default:
-				return 'Good'
+				return 'Not Started'
 		}
 	}
 
 	return (
-		<div class="main">
+		<div className="main">
 			{ isSprintStarted && (
 				<>
 					<div style={{ margin: '0.5rem', padding: '0.5rem', color: renderForegroundColorStatus(status), backgroundColor: renderBackgroundColorStatus(status)}}>STATUS: {renderStatusName(status)}</div>
 					<div style={{ margin: '0.5rem'}}>{secondsLeft} left</div>
 					<div style={{ margin: '0.5rem'}}>{wordCount} words written</div>
+				</>
+			)}
+			{ !isSprintStarted && (
+				<>
+					<div style={{ margin: '0.5rem', padding: '0.5rem', color: renderForegroundColorStatus(null), backgroundColor: renderBackgroundColorStatus(null)}}>STATUS: {renderStatusName(null)}</div>
+					<div style={{ margin: '0.5rem'}}>{secondsToMMSS(plugin.theSprint.sprintLength * 60)} left</div>
 				</>
 			)}
 			<div style={{ margin: '0.5rem'}}>
