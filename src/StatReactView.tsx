@@ -80,7 +80,7 @@ export const StatReactView = () => {
 	}
 
 	return (
-		<div>
+		<div class="main">
 			{ isSprintStarted && (
 				<>
 					<div style={{ margin: '0.5rem', padding: '0.5rem', color: renderForegroundColorStatus(status), backgroundColor: renderBackgroundColorStatus(status)}}>STATUS: {renderStatusName(status)}</div>
@@ -93,25 +93,27 @@ export const StatReactView = () => {
 				<button disabled={!isSprintStarted} style={{ backgroundColor: 'red', opacity: isSprintStarted ? 1 : 0.4 }} onClick={() => {plugin.theSprint.stopSprint()}}>Stop</button>
 			</div>
 
-			<hr />
-			{totalWordCount > 0 &&
-				<>
-					<div align="center" style={{marginTop: '1rem'}}>
-						Total Word Count: {totalWordCount + plugin.theSprint.getStats().totalWordsWritten}
-					</div>
-					<div align="center">
-						Daily Word Count: {dailyWordCount + plugin.theSprint.getStats().totalWordsWritten}
-					</div>
-				</>
-			}
-			{statsAvailable &&
-			<div align="center" style={{margin: '0.5rem'}}>
-				<button style={{ backgroundColor: 'grey' }} onClick={() => {
-					plugin.showEndOfSprintStatsModal()
-				}}>View Stats
-				</button>
+			<div id="bottom">
+				<hr />
+				{totalWordCount > 0 &&
+					<>
+						<div align="center" style={{marginTop: '1rem'}}>
+							Total Word Count: {totalWordCount + plugin.theSprint.getStats().totalWordsWritten}
+						</div>
+						<div align="center">
+							Daily Word Count: {dailyWordCount + plugin.theSprint.getStats().totalWordsWritten}
+						</div>
+					</>
+				}
+				{statsAvailable &&
+				<div align="center" style={{margin: '0.5rem'}}>
+					<button style={{ backgroundColor: 'grey' }} onClick={() => {
+						plugin.showEndOfSprintStatsModal()
+					}}>View Stats
+					</button>
+				</div>
+				}
 			</div>
-			}
 		</div>
 	)
 }

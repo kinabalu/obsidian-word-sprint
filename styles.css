@@ -1,4 +1,12 @@
-/* Sets all the text color to red! */
-/*body {*/
-/*    color: red;*/
-/*}*/
+/*
+.main {
+	height: 100%;
+	width: 500px;
+	position: relative;
+}
+
+#bottom {
+	position: absolute;
+	bottom: 0;
+}
+*/
