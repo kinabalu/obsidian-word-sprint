@@ -100,8 +100,9 @@ export const StatReactView = () => {
 				<button className="sprintStop"  disabled={!isSprintStarted} style={{ opacity: isSprintStarted ? 1 : 0.4 }} onClick={() => {plugin.theSprint.stopSprint()}}>Stop</button>
 			</div>
 
+			<hr />
+
 			<div id="statsPanel">
-				<hr />
 				{totalWordCount > 0 &&
 					<>
 						<div className="sprintTotalWordCount">
@@ -121,6 +122,19 @@ export const StatReactView = () => {
 				</div>
 				}
 			</div>
+
+			{/*
+			<hr />
+
+			<div id="goalPanel">
+				<div className="sprintDailyGoal">
+					Daily Goal: 1,000
+				</div>
+				<div className="sprintOverallGoal">
+					Overall Goal: 50,000
+				</div>
+			</div>
+			*/}
 		</div>
 	)
 }
