@@ -45,3 +45,15 @@
 #wordsprint #sprintViewStats .viewStats {
 	background-color: grey;
 }
+
+#wordspring #goalPanel .goalPopup {
+	background-color: grey;
+}
+
+#wordspring #goalPanel .dailyGoal {
+	margin: 0.5rem;
+}
+
+#wordspring #goalPanel .overallGoal {
+	margin: 0.5rem;
+}

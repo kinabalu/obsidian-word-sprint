@@ -1,7 +1,7 @@
 import {PluginContext} from "./context";
 import * as React from "react"
 import { useEffect, useRef } from 'react'
-import WordSprintPlugin from "../main";
+import WordSprintPlugin from "./main";
 
 export const usePlugin = (): WordSprintPlugin | undefined => {
 	return React.useContext(PluginContext);

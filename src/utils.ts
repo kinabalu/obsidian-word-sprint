@@ -31,7 +31,7 @@ export function secondsToHumanize(seconds : number) {
 
 	let text : string = ''
 
-	if (seconds > 60) {
+	if (seconds >= 60) {
 		text += `${numeral(minutes).format('0')} minute${minutes > 1 ? 's' : ''}`
 	}
 	if (seconds % 60 > 0) {

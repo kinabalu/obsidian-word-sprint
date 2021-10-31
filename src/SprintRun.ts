@@ -207,10 +207,6 @@ export default class SprintRun {
 	}
 
 	getStats() : SprintRunStat {
-		const averageWordsPerMinute = this.wordsPerMinute.reduce((total: number, amount: WordsPerMinute, index: number, array: WordsPerMinute[]) => {
-			total += amount.now
-			return total / array.length
-		}, 0)
 
 		return {
 			id: this.id,
@@ -218,7 +214,7 @@ export default class SprintRun {
 			sprintLength: this.sprintLength,
 			elapsedSprintLength: Math.floor(this.elapsedMilliseconds / 1000),
 			totalWordsWritten: this.getWordCountDisplay(),
-			averageWordsPerMinute: averageWordsPerMinute,
+			averageWordsPerMinute: this.getWordCountDisplay() / Math.floor(this.elapsedMilliseconds / 1000 / 60),
 			yellowNotices: this.yellowNoticeCount,
 			redNotices: this.redNoticeCount,
 			longestStretchNotWriting: Math.ceil(this.longestStretchNotWriting / 1000),

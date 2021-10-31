@@ -1,6 +1,7 @@
 import {App, Modal, Setting} from "obsidian";
 import {SprintRunStat} from "./SprintRun";
 import {secondsToHumanize} from "./utils";
+import numeral from 'numeral'
 
 export default class EndOfSprintStatsModal extends Modal {
 	sprintRunStat : SprintRunStat
@@ -34,12 +35,12 @@ export default class EndOfSprintStatsModal extends Modal {
 				text.setValue(`${this.sprintRunStat.totalWordsWritten}`)
 				text.setDisabled(true)
 			})
-		// new Setting(contentEl)
-		// 	.setName("Average Words Per Minute")
-		// 	.addText((text) => {
-		// 		text.setValue(`${numeral(this.sprintRunStat.averageWordsPerMinute).format('0')}`)
-		// 		text.setDisabled(true)
-		// 	})
+		new Setting(contentEl)
+			.setName("Average Words Per Minute")
+			.addText((text) => {
+				text.setValue(`${numeral(this.sprintRunStat.averageWordsPerMinute).format('0')}`)
+				text.setDisabled(true)
+			})
 		new Setting(contentEl)
 			.setName("Yellow Notices")
 			.addText((text) => {

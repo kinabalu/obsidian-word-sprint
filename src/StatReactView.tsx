@@ -2,6 +2,7 @@ import * as React from "react"
 import useInterval, {usePlugin} from './hooks'
 import {SprintRunStat} from "./SprintRun";
 import {secondsToMMSS} from "./utils";
+import numeral from 'numeral';
 
 export const StatReactView = () => {
 
@@ -106,10 +107,10 @@ export const StatReactView = () => {
 				{totalWordCount > 0 &&
 					<>
 						<div className="sprintTotalWordCount">
-							Total Word Count: {totalWordCount + plugin.theSprint.getStats().totalWordsWritten}
+							Total Word Count: {numeral(totalWordCount + plugin.theSprint.getStats().totalWordsWritten).format('0,0')}
 						</div>
 						<div className="sprintDailyWordCount">
-							Daily Word Count: {dailyWordCount + plugin.theSprint.getStats().totalWordsWritten}
+							Daily Word Count: {numeral(dailyWordCount + plugin.theSprint.getStats().totalWordsWritten).format('0,0')}
 						</div>
 					</>
 				}
@@ -127,11 +128,12 @@ export const StatReactView = () => {
 			<hr />
 
 			<div id="goalPanel">
-				<div className="sprintDailyGoal">
-					Daily Goal: 1,000
+				<button style={{ backgroundColor: 'grey'}} className="goalPopup">Set Goals</button>
+				<div className="dailyGoal">
+					Daily Goal: None
 				</div>
-				<div className="sprintOverallGoal">
-					Overall Goal: 50,000
+				<div className="overallGoal">
+					Overall Goal: None
 				</div>
 			</div>
 			*/}

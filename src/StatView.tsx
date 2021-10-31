@@ -3,7 +3,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { PluginContext } from "./context";
 import { StatReactView } from './StatReactView'
-import WordSprintPlugin from "../main";
+import WordSprintPlugin from "./main";
 
 export const STAT_VIEW_TYPE = "stat-view";
 

@@ -1,5 +1,5 @@
 import {App, PluginSettingTab, Setting} from "obsidian";
-import WordSprintPlugin from "../main";
+import WordSprintPlugin from "./main";
 
 export default class WordSprintSettingsTab extends PluginSettingTab {
 	plugin: WordSprintPlugin;
