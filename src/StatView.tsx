@@ -21,7 +21,7 @@ export default class StatView extends ItemView {
 	}
 
 	getIcon() {
-		return "pencil"
+		return "running-man"
 	}
 
 	getDisplayText() {
