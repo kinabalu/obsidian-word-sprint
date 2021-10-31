@@ -93,8 +93,7 @@ export const StatReactView = () => {
 			{ !isSprintStarted && (
 				<>
 					<div className="sprintStatus" style={{ color: renderForegroundColorStatus(null), backgroundColor: renderBackgroundColorStatus(null)}}>{renderStatusName(null)}</div>
-					<div className="secondsLeft">{secondsToMMSS(59.8)}</div>
-					{/*<div className="secondsLeft">{secondsToMMSS(plugin.theSprint.sprintLength * 60)}</div>*/}
+					<div className="secondsLeft">{secondsToMMSS(plugin.theSprint.sprintLength * 60)}</div>
 				</>
 			)}
 			<div id="sprintActionPanel">
