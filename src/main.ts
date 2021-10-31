@@ -37,6 +37,16 @@ export default class WordSprintPlugin extends Plugin {
 
 	sprintHistory : SprintRunStat[] = []
 
+	async emptyTotalStats() {
+		this.sprintHistory = []
+		await this.saveStats()
+	}
+
+	async emptyDailyStats() {
+		this.sprintHistory = this.sprintHistory.filter((hist) => hist.created < moment().startOf('day').toDate().valueOf())
+		await this.saveStats()
+	}
+
 	async loadStats() {
 		const adapter = this.app.vault.adapter;
 		const dir = this.manifest.dir;
@@ -113,7 +123,7 @@ export default class WordSprintPlugin extends Plugin {
 					statsText = `Sprint Length: ${secondsToHumanize(stats.sprintLength * 60)}\n`
 				}
 				statsText += `Total Words Written: ${stats.totalWordsWritten}\n`
-				statsText += `Average Words Per Minute: ${numeral(stats.averageWordsPerMinute).format('0')}\n`
+				statsText += `Average Words Per Minute: ${numeral(stats.averageWordsPerMinute).format('0.0')}\n`
 				statsText += `Yellow Notices: ${stats.yellowNotices}\n`
 				statsText += `Red Notices: ${stats.redNotices}\n`
 				statsText += `Longest Stretch Not Writing: ${secondsToHumanize(stats.longestStretchNotWriting)}\n`

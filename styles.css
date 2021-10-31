@@ -2,6 +2,8 @@
 #wordsprint #sprintActionPanel,
 #wordsprint .wordsWritten,
 #wordsprint #statsPanel,
+#wordsprint #sectionTab,
+#wordsprint #goalPanel,
 #wordsprint .secondsLeft {
     display: flex;
     align-content: center;
@@ -11,11 +13,30 @@
 
 
 /*Status*/
-#wordsprint .status,
-#wordsprint .sprintStatus {
+#wordsprint .status {
     text-align: center;
     margin: 0.5rem;
     padding: 0.5rem;
+}
+
+#wordsprint .pending {
+	color: white;
+	background-color: grey;
+}
+
+#wordsprint .danger {
+	color: white;
+	background-color: red;
+}
+
+#wordsprint .warning {
+	color: black;
+	background-color: gold;
+}
+
+#wordsprint .success {
+	color: white;
+	background-color: green;
 }
 
 /*Time*/
@@ -45,6 +66,14 @@
     color: var(--text-on-accent);
 }
 
+/* Tabs */
+#wordsprint #sectionTab button {
+	margin: 0;
+}
+
+#wordsprint #sectionTab button .active {
+	background-color: var(--interactive-hover);
+}
 
 /*Stats*/
 #wordsprint #statsPanel {
@@ -63,12 +92,19 @@
     background-color: var(--text-faint);
 }
 
-#wordspring #goalPanel .goalPopup {
-	background-color: grey;
+/* Goals */
+#wordsprint #goalPanel {
+	flex-direction: column;
 }
 
-#wordspring #goalPanel .dailyGoal {
-	margin: 0.5rem;
+#wordsprint #sprintGoal .dailyGoal {
+	margin-top: 1rem;
+}
+#wordsprint #sprintGoal {
+	padding: 2em;
+}
+#wordspring #goalPanel .goalPopup {
+	background-color: grey;
 }
 
 #wordspring #goalPanel .overallGoal {

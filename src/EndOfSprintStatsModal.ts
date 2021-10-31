@@ -38,7 +38,7 @@ export default class EndOfSprintStatsModal extends Modal {
 		new Setting(contentEl)
 			.setName("Average Words Per Minute")
 			.addText((text) => {
-				text.setValue(`${numeral(this.sprintRunStat.averageWordsPerMinute).format('0')}`)
+				text.setValue(`${numeral(this.sprintRunStat.averageWordsPerMinute).format('0.0')}`)
 				text.setDisabled(true)
 			})
 		new Setting(contentEl)

@@ -65,6 +65,8 @@ export default class SprintRun {
 		this.sprintLength = sprintLength
 		this.sprintLengthInMS = this.sprintLength * 60 * 1000
 
+		this.millisecondsLeft = this.sprintLengthInMS
+
 		this.yellowNoticeTimeout = yellowNoticeTimeout
 		this.redNoticeTimeout = redNoticeTimeout
 	}
@@ -109,7 +111,6 @@ export default class SprintRun {
 	}
 
 	getMiniStats() {
-		console.log(`${this.millisecondsLeft} - ${secondsToMMSS(this.millisecondsLeft / 1000)}`)
 		return {
 			secondsLeft: secondsToMMSS(this.millisecondsLeft / 1000),
 			wordCount: this.getWordCountDisplay()
@@ -209,13 +210,18 @@ export default class SprintRun {
 
 	getStats() : SprintRunStat {
 
+		let averageWordsPerMinute = 0
+		if (Math.floor(this.elapsedMilliseconds / 1000 / 60) > 0) {
+			averageWordsPerMinute = this.getWordCountDisplay() / Math.floor(this.elapsedMilliseconds / 1000 / 60)
+		}
+
 		return {
 			id: this.id,
 			name: '',
 			sprintLength: this.sprintLength,
 			elapsedSprintLength: Math.floor(this.elapsedMilliseconds / 1000),
 			totalWordsWritten: this.getWordCountDisplay(),
-			averageWordsPerMinute: this.getWordCountDisplay() / Math.floor(this.elapsedMilliseconds / 1000 / 60),
+			averageWordsPerMinute: averageWordsPerMinute,
 			yellowNotices: this.yellowNoticeCount,
 			redNotices: this.redNoticeCount,
 			longestStretchNotWriting: Math.ceil(this.longestStretchNotWriting / 1000),

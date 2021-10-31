@@ -83,5 +83,28 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 					})
 				text.inputEl.type = 'number'
 			})
+
+		containerEl.createEl('h2', {text: 'Stats'});
+
+		new Setting(containerEl)
+			.setName('Reset daily stat')
+			.setDesc('Remove all stats calculated for the current day')
+			.addButton(button => button
+				.setButtonText("Reset Daily Stats")
+				.onClick(async () => {
+					await this.plugin.emptyDailyStats()
+				})
+			)
+
+		new Setting(containerEl)
+			.setName('Reset all stats')
+			.setDesc('Remove all stats shown for the tool')
+			.addButton(button => button
+				.setButtonText("Reset All Stats")
+				.onClick(async () => {
+					await this.plugin.emptyTotalStats()
+				})
+			)
+
 	}
 }

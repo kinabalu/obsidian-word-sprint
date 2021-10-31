@@ -33,40 +33,16 @@ export const StatReactView = () => {
 		}
 	}, 1000)
 
+	const [activeTab, setActiveTab] = React.useState('stats')
+
 	const [totalWordCount, setTotalWordCount] = React.useState(0)
 	const [dailyWordCount, setDailyWordCount] = React.useState(0)
 
 	const [wordCount, setWordCount] = React.useState(null)
 	const [secondsLeft, setSecondsLeft] = React.useState(null)
-	const [status, setStatus] = React.useState('GREEN')
+	const [status, setStatus] = React.useState(null)
 	const [statsAvailable, setStatsAvailable] = React.useState(false)
 	const [isSprintStarted, setIsSprintStarted] = React.useState(false)
-
-	const renderBackgroundColorStatus = (status : string) => {
-		switch(status) {
-			case 'GREEN':
-				return 'green'
-			case 'RED':
-				return 'red'
-			case 'YELLOW':
-				return 'gold'
-			default:
-				return 'grey'
-		}
-	}
-
-	const renderForegroundColorStatus = (status : string) => {
-		switch(status) {
-			case 'GREEN':
-				return 'white'
-			case 'RED':
-				return 'white'
-			case 'YELLOW':
-				return 'black'
-			default:
-				return 'white'
-		}
-	}
 
 	const renderStatusName = (status : string) => {
 		switch(status) {
@@ -81,61 +57,94 @@ export const StatReactView = () => {
 		}
 	}
 
+	const renderStatusClass = (status : string) => {
+		switch(status) {
+			case 'GREEN':
+				return 'success'
+			case 'RED':
+				return 'danger'
+			case 'YELLOW':
+				return 'warning'
+			default:
+				return 'pending'
+		}
+	}
+
+	const stopSprint = () => {
+		setStatus(null)
+		plugin.theSprint.stopSprint()
+	}
+
+	const startSprint = () => {
+		plugin.startSprintCommand()
+	}
+
 	return (
 		<div id="wordsprint">
 			{ isSprintStarted && (
 				<>
-					<div className="status" style={{ color: renderForegroundColorStatus(status), backgroundColor: renderBackgroundColorStatus(status)}}>{renderStatusName(status)}</div>
+					<div className={`status ${renderStatusClass(status)}`}>{renderStatusName(status)}</div>
 					<div className="secondsLeft">{secondsLeft}</div>
 					<div className="wordsWritten">{wordCount} words written</div>
 				</>
 			)}
 			{ !isSprintStarted && (
 				<>
-					<div className="sprintStatus" style={{ color: renderForegroundColorStatus(null), backgroundColor: renderBackgroundColorStatus(null)}}>{renderStatusName(null)}</div>
+					<div className={`status ${renderStatusClass(status)}`}>{renderStatusName(status)}</div>
 					<div className="secondsLeft">{secondsToMMSS(plugin.theSprint.sprintLength * 60)}</div>
 				</>
 			)}
 			<div id="sprintActionPanel">
-				<button className="sprintStart" disabled={isSprintStarted} style={{ opacity: isSprintStarted ? 0.4 : 1 }} onClick={() => {plugin.startSprintCommand()}}>Start</button>
-				<button className="sprintStop"  disabled={!isSprintStarted} style={{ opacity: isSprintStarted ? 1 : 0.4 }} onClick={() => {plugin.theSprint.stopSprint()}}>Stop</button>
+				<button className="sprintStart" disabled={isSprintStarted} style={{ opacity: isSprintStarted ? 0.4 : 1 }} onClick={() => {startSprint()}}>Start</button>
+				<button className="sprintStop"  disabled={!isSprintStarted} style={{ opacity: isSprintStarted ? 1 : 0.4 }} onClick={() => {stopSprint()}}>Stop</button>
 			</div>
 
 			<hr />
-
-			<div id="statsPanel">
-				{totalWordCount > 0 &&
-					<>
-						<div className="sprintTotalWordCount">
-							Total Word Count: {numeral(totalWordCount + plugin.theSprint.getStats().totalWordsWritten).format('0,0')}
-						</div>
-						<div className="sprintDailyWordCount">
-							Daily Word Count: {numeral(dailyWordCount + plugin.theSprint.getStats().totalWordsWritten).format('0,0')}
-						</div>
-					</>
-				}
-				{statsAvailable &&
-				<div id="sprintViewStats">
-					<button className="viewStats" onClick={() => {
-						plugin.showEndOfSprintStatsModal()
-					}}>View Stats
-					</button>
-				</div>
-				}
-			</div>
 
 			{/*
-			<hr />
-
-			<div id="goalPanel">
-				<button style={{ backgroundColor: 'grey'}} className="goalPopup">Set Goals</button>
-				<div className="dailyGoal">
-					Daily Goal: None
-				</div>
-				<div className="overallGoal">
-					Overall Goal: None
-				</div>
+			<div id="sectionTab">
+				<button className={`statsTab ${activeTab === 'stats' ? 'active' : ''}`} onClick={() => { setActiveTab('stats')}}>Stats</button>
+				<button className={`goalsTab ${activeTab === 'goals' ? 'active' : ''}`} onClick={() => { setActiveTab('goals')}}>Goals</button>
 			</div>
+			*/}
+			{activeTab === 'stats' &&
+				<div id="statsPanel">
+					{totalWordCount > 0 &&
+					<>
+						<div className="sprintTotalWordCount">
+							Total Word
+							Count: {numeral(totalWordCount + plugin.theSprint.getStats().totalWordsWritten).format('0,0')}
+						</div>
+						<div className="sprintDailyWordCount">
+							Daily Word
+							Count: {numeral(dailyWordCount + plugin.theSprint.getStats().totalWordsWritten).format('0,0')}
+						</div>
+					</>
+					}
+					{statsAvailable &&
+					<div id="sprintViewStats">
+						<button className="viewStats" onClick={() => {
+							plugin.showEndOfSprintStatsModal()
+						}}>View Stats
+						</button>
+					</div>
+					}
+				</div>
+			}
+			{/*
+			{activeTab === 'goals' &&
+				<div id="goalPanel">
+					<div className="dailyGoal">
+						Daily Goal: None
+					</div>
+					<div className="overallGoal">
+						Overall Goal: None
+					</div>
+					<div id="sprintGoal">
+						<button style={{backgroundColor: 'grey'}} className="goalPopup">Set Goals</button>
+					</div>
+				</div>
+			}
 			*/}
 		</div>
 	)
