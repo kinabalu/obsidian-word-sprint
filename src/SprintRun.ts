@@ -109,6 +109,7 @@ export default class SprintRun {
 	}
 
 	getMiniStats() {
+		console.log(`${this.millisecondsLeft} - ${secondsToMMSS(this.millisecondsLeft / 1000)}`)
 		return {
 			secondsLeft: secondsToMMSS(this.millisecondsLeft / 1000),
 			wordCount: this.getWordCountDisplay()

@@ -1,4 +1,4 @@
-import * as numeral from "numeral";
+import numeral from "numeral";
 
 /**
  *
@@ -26,8 +26,8 @@ export function getWordCount(text: string) {
 }
 
 export function secondsToHumanize(seconds : number) {
-	const minutes = Math.ceil(seconds / 60)
-	const secondsForFormatting = Math.round(Math.ceil(seconds) % 60)
+	const minutes = ~~(Math.round(seconds) / 60)
+	const secondsForFormatting = (Math.round(seconds) % 60)
 
 	let text : string = ''
 
@@ -44,7 +44,8 @@ export function secondsToHumanize(seconds : number) {
 }
 
 export function secondsToMMSS(seconds : number) {
-	const minutes = Math.ceil(seconds / 60)
-	const secondsForFormatting = Math.round(Math.ceil(seconds) % 60)
+	const minutes = ~~(Math.round(seconds) / 60)
+	const secondsForFormatting = (Math.round(seconds) % 60)
+
 	return `${numeral(minutes).format('00')}:${numeral(secondsForFormatting).format('00')}`
 }
