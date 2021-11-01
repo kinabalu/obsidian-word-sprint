@@ -75,17 +75,15 @@ export default class WordSprintPlugin extends Plugin {
 	}
 
 	async saveStats() {
-		if (this.sprintHistory.length > 0) {
-			const adapter = this.app.vault.adapter;
-			const dir = this.manifest.dir;
-			const path = normalizePath(`${dir}/stats.json`)
+		const adapter = this.app.vault.adapter;
+		const dir = this.manifest.dir;
+		const path = normalizePath(`${dir}/stats.json`)
 
-			try {
-				await adapter.write(path, JSON.stringify(this.sprintHistory))
-			} catch(error) {
-				new Notice("Unable to write to stats.json file")
-				console.error(error)
-			}
+		try {
+			await adapter.write(path, JSON.stringify(this.sprintHistory))
+		} catch(error) {
+			new Notice("Unable to write to stats.json file")
+			console.error(error)
 		}
 	}
 
