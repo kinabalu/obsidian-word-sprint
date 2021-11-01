@@ -67,14 +67,19 @@ export default class SprintRun {
 		return wordCountDisplay >= 0 ? wordCountDisplay : 0
 	}
 
-	typingUpdate(contents: string, filepath: string) {
-		const secondsSinceLastWord = Date.now() - this.lastWordTime
+	updateNotWriting(updateTime : number) {
+		const secondsSinceLastWord = Math.floor((updateTime - this.lastWordTime)/1000) // don't count < 1 second gaps
 
 		if (secondsSinceLastWord > this.longestStretchNotWriting) {
 			this.longestStretchNotWriting = secondsSinceLastWord
 		}
 		this.totalTimeNotWriting += secondsSinceLastWord
-		this.lastWordTime = Date.now()
+	}
+
+	typingUpdate(contents: string, filepath: string) {
+		const currentNow = Date.now()
+		this.updateNotWriting(currentNow)
+		this.lastWordTime = currentNow
 		this.wordCount = getWordCount(contents)
 	}
 
@@ -150,6 +155,7 @@ export default class SprintRun {
 			if (this.millisecondsLeft <= 0 && this.sprintStarted) {
 				this.sprintStarted = false
 				this.sprintComplete = true
+				this.updateNotWriting(currentNow)
 				window.clearInterval(this.sprintInterval)
 
 				// DEBUG
@@ -166,6 +172,8 @@ export default class SprintRun {
 	 */
 	stopSprint(): SprintRunStat {
 		if (this.sprintStarted) {
+			// this must be called before we getStats(), otherwise the data will be missing
+			this.updateNotWriting(Date.now())
 			const stats = this.getStats()
 
 			this.endOfSprintCallback(stats)
@@ -194,8 +202,8 @@ export default class SprintRun {
 			averageWordsPerMinute: averageWordsPerMinute,
 			yellowNotices: this.yellowNoticeCount,
 			redNotices: this.redNoticeCount,
-			longestStretchNotWriting: Math.ceil(this.longestStretchNotWriting / 1000),
-			totalTimeNotWriting: Math.ceil(this.totalTimeNotWriting / 1000),
+			longestStretchNotWriting: Math.ceil(this.longestStretchNotWriting),
+			totalTimeNotWriting: Math.ceil(this.totalTimeNotWriting),
 			elapsedMilliseconds: this.elapsedMilliseconds,
 			created: this.created,
 		} as SprintRunStat

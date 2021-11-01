@@ -129,7 +129,7 @@ export default class WordSprintPlugin extends Plugin {
 				statsText += `Yellow Notices: ${stats.yellowNotices}\n`
 				statsText += `Red Notices: ${stats.redNotices}\n`
 				statsText += `Longest Stretch Not Writing: ${secondsToHumanize(stats.longestStretchNotWriting)}\n`
-				// statsText += `Total Time Not Writing: ${secondsToHumanize(stats.totalTimeNotWriting)}\n`
+				statsText += `Total Time Not Writing: ${secondsToHumanize(stats.totalTimeNotWriting)}\n`
 
 				editor.replaceSelection(statsText)
 			}
