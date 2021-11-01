@@ -25,6 +25,7 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 				text.setValue(`${this.plugin.settings.sprintLength}`)
 					.onChange(async (value) => {
 						this.plugin.settings.sprintLength = Number(value)
+						this.plugin.theSprint.updateSprintLength(Number(value))
 						await this.plugin.saveSettings();
 					})
 			})

@@ -18,6 +18,9 @@ export interface SprintRunStat {
 	longestStretchNotWriting: number;
 	totalTimeNotWriting: number;
 	elapsedMilliseconds: number;
+	wordsAdded: number,
+	wordsDeleted: number,
+	wordsNet: number,
 }
 
 export default class SprintRun {
@@ -31,6 +34,13 @@ export default class SprintRun {
 	sprintInterval : number
 	sprintStarted : boolean = false
 	sprintComplete : boolean = false
+
+	timeStart : number = 0
+	timeEnd : number = 0
+
+	wordsLastCount: number = 0
+	wordsAdded: number = 0
+	wordsDeleted: number = 0
 
 	lastWordTime : number = 0
 	previousWordCount : number
@@ -74,6 +84,9 @@ export default class SprintRun {
 	updateSprintLength(sprintLength : number) {
 		this.sprintLength = sprintLength
 		this.sprintLengthInMS = this.sprintLength * 60 * 1000
+		if (!this.isStarted()) {
+		   this.millisecondsLeft = this.sprintLengthInMS
+		}
 	}
 
 	updateNoticeTimeout(yellowNoticeTimeout : number, redNoticeTimeout : number) {
@@ -87,14 +100,27 @@ export default class SprintRun {
 	}
 
 	typingUpdate(contents: string, filepath: string) {
-		const secondsSinceLastWord = Date.now() - this.lastWordTime
+		const currentNow = Date.now()
+		const secondsSinceLastWord = Math.floor((currentNow - this.lastWordTime)/1000) // don't count < 1 second gaps
 
 		if (secondsSinceLastWord > this.longestStretchNotWriting) {
 			this.longestStretchNotWriting = secondsSinceLastWord
 		}
 		this.totalTimeNotWriting += secondsSinceLastWord
-		this.lastWordTime = Date.now()
+		this.lastWordTime = currentNow
 		this.wordCount = getWordCount(contents)
+
+		/* Net words calculation (NEW FEATURE)
+		   This may need to be a bit more granular, otherwise typo correction via ctrl+backspace
+		   will increase net words, even though we're just fixing a newly-added word.
+		*/
+
+		let netWords : number = this.wordCount - this.wordsLastCount
+		this.wordsLastCount = this.wordCount
+		this.wordsAdded += Math.max(netWords, 0)
+		this.wordsDeleted += Math.abs(Math.min(netWords, 0))
+
+		// End new feature code
 
 		this.wordsPerMinute[this.latestMinute].now = (this.getWordCountDisplay() - this.wordsPerMinute[this.latestMinute].previous)
 	}
@@ -120,9 +146,12 @@ export default class SprintRun {
 	startSprint(previousWordCount : number, update : (status : string, statusChanged : boolean) => void, endOfSprintCallback : (sprintRunStat : SprintRunStat) => void): number {
 		this.endOfSprintCallback = endOfSprintCallback
 		this.previousWordCount = previousWordCount
+		this.wordsLastCount = previousWordCount
 
 		const now = Date.now()
 		this.created = moment.utc().valueOf()
+		this.timeStart = now
+		this.timeEnd = now + this.sprintLengthInMS
 		this.lastWordTime = now
 		this.sprintStarted = true
 
@@ -144,7 +173,7 @@ export default class SprintRun {
 			this.elapsedMilliseconds = currentNow - now
 
 			this.rand = Math.floor(Math.random() * (101));
-			this.millisecondsLeft = this.sprintLengthInMS - this.elapsedMilliseconds
+			this.millisecondsLeft = this.timeEnd - currentNow
 
 			const msSinceLastWord = Date.now() - this.lastWordTime
 
@@ -180,6 +209,9 @@ export default class SprintRun {
 			if (this.millisecondsLeft <= 0 && this.sprintStarted) {
 				this.sprintStarted = false
 				this.sprintComplete = true
+				if (msSinceLastWord > 1000) {
+					this.totalTimeNotWriting += Math.floor(msSinceLastWord/1000)
+				}
 				window.clearInterval(this.sprintInterval)
 
 				// DEBUG
@@ -196,8 +228,11 @@ export default class SprintRun {
 	 */
 	stopSprint(): SprintRunStat {
 		if (this.sprintStarted) {
+			let secondsSinceLastWord = Math.floor((Date.now() - this.lastWordTime)/1000)
+			if (secondsSinceLastWord > 0) {
+				this.totalTimeNotWriting += secondsSinceLastWord
+			}
 			const stats = this.getStats()
-
 			this.endOfSprintCallback(stats)
 			this.sprintStarted = false
 			this.sprintComplete = true
@@ -210,23 +245,23 @@ export default class SprintRun {
 
 	getStats() : SprintRunStat {
 
-		let averageWordsPerMinute = 0
-		if (Math.floor(this.elapsedMilliseconds / 1000 / 60) > 0) {
-			averageWordsPerMinute = this.getWordCountDisplay() / Math.floor(this.elapsedMilliseconds / 1000 / 60)
-		}
+		let averageWordsPerMinute = this.getWordCountDisplay() * 1000 * 60 / Math.floor(Math.max(this.elapsedMilliseconds, 1))
 
 		return {
 			id: this.id,
 			name: '',
 			sprintLength: this.sprintLength,
-			elapsedSprintLength: Math.floor(this.elapsedMilliseconds / 1000),
+			elapsedSprintLength: Math.ceil(this.elapsedMilliseconds / 1000),
 			totalWordsWritten: this.getWordCountDisplay(),
 			averageWordsPerMinute: averageWordsPerMinute,
 			yellowNotices: this.yellowNoticeCount,
 			redNotices: this.redNoticeCount,
-			longestStretchNotWriting: Math.ceil(this.longestStretchNotWriting / 1000),
-			totalTimeNotWriting: Math.ceil(this.totalTimeNotWriting / 1000),
+			longestStretchNotWriting: this.longestStretchNotWriting,
+			totalTimeNotWriting: this.totalTimeNotWriting,
 			elapsedMilliseconds: this.elapsedMilliseconds,
+			wordsAdded: this.wordsAdded,
+			wordsDeleted: this.wordsDeleted,
+			wordsNet: this.wordsAdded - this.wordsDeleted,
 			created: this.created,
 		} as SprintRunStat
 	}
