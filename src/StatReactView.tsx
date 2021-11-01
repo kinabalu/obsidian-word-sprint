@@ -1,6 +1,6 @@
 import * as React from "react"
 import useInterval, {usePlugin} from './hooks'
-import {SprintRunStat} from "./SprintRun";
+import {SprintRunStat} from "./types";
 import {secondsToMMSS} from "./utils";
 import numeral from 'numeral';
 

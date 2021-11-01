@@ -1,5 +1,5 @@
 import {App, Modal, Setting} from "obsidian";
-import {SprintRunStat} from "./SprintRun";
+import {SprintRunStat} from "./types";
 import {secondsToHumanize} from "./utils";
 import numeral from 'numeral'
 
