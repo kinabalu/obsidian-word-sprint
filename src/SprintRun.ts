@@ -77,14 +77,18 @@ export default class SprintRun {
 		return wordCountDisplay >= 0 ? wordCountDisplay : 0
 	}
 
-	typingUpdate(contents: string, filepath: string) {
-		const currentNow = Date.now()
-		const secondsSinceLastWord = Math.floor((currentNow - this.lastWordTime)/1000) // don't count < 1 second gaps
+	updateNotWriting(updateTime : number) {
+		const secondsSinceLastWord = Math.floor((updateTime - this.lastWordTime)/1000) // don't count < 1 second gaps
 
 		if (secondsSinceLastWord > this.longestStretchNotWriting) {
 			this.longestStretchNotWriting = secondsSinceLastWord
 		}
 		this.totalTimeNotWriting += secondsSinceLastWord
+	}
+
+	typingUpdate(contents: string, filepath: string) {
+		const currentNow = Date.now()
+		this.updateNotWriting(currentNow)
 		this.lastWordTime = currentNow
 		this.wordCount = getWordCount(contents)
 
@@ -177,9 +181,7 @@ export default class SprintRun {
 			if (this.millisecondsLeft <= 0 && this.sprintStarted) {
 				this.sprintStarted = false
 				this.sprintComplete = true
-				if (msSinceLastWord > 1000) {
-					this.totalTimeNotWriting += Math.floor(msSinceLastWord/1000)
-				}
+				this.updateNotWriting(currentNow)
 				window.clearInterval(this.sprintInterval)
 
 				// DEBUG
@@ -196,10 +198,8 @@ export default class SprintRun {
 	 */
 	stopSprint(): SprintRunStat {
 		if (this.sprintStarted) {
-			let secondsSinceLastWord = Math.floor((Date.now() - this.lastWordTime)/1000)
-			if (secondsSinceLastWord > 0) {
-				this.totalTimeNotWriting += secondsSinceLastWord
-			}
+			// this must be called before we getStats(), otherwise the data will be missing
+			this.updateNotWriting(Date.now())
 			const stats = this.getStats()
 			this.endOfSprintCallback(stats)
 			this.sprintStarted = false
