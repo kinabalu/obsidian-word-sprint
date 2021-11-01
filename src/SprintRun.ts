@@ -232,8 +232,8 @@ export default class SprintRun {
 			averageWordsPerMinute: averageWordsPerMinute,
 			yellowNotices: this.yellowNoticeCount,
 			redNotices: this.redNoticeCount,
-			longestStretchNotWriting: Math.ceil(this.longestStretchNotWriting),
-			totalTimeNotWriting: Math.ceil(this.totalTimeNotWriting),
+			longestStretchNotWriting: this.longestStretchNotWriting,
+			totalTimeNotWriting: this.totalTimeNotWriting,
 			elapsedMilliseconds: this.elapsedMilliseconds,
 			created: this.created,
 		} as SprintRunStat
