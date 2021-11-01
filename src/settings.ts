@@ -5,6 +5,9 @@ export interface WordSprintSettings {
 	yellowNoticeText : string;
 	redNoticeTimeout: number;
 	redNoticeText : string;
+	dailyGoal: number;
+	overallGoal: number;
+	defaultTab: string;
 }
 
 export interface WordsPerMinute {

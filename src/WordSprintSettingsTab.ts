@@ -84,6 +84,47 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 				text.inputEl.type = 'number'
 			})
 
+		new Setting(containerEl)
+			.setName('Default tab')
+			.setDesc('Choose which tab you would like to see by default')
+			.addDropdown((dropdown) => {
+				dropdown.addOptions({ stats: 'Stats', goals: 'Goals' })
+					.setValue(this.plugin.settings.defaultTab)
+					.onChange(async (value) => {
+						this.plugin.settings.defaultTab = value
+						await this.plugin.saveSettings()
+					})
+			})
+
+		containerEl.createEl('h2', {text: 'Goals'});
+
+		new Setting(containerEl)
+			.setName('Daily Goal')
+			.setDesc('Word Count for your daily goal')
+			.addText((text) => {
+				text.setPlaceholder('e.g. 1700')
+				text.setValue(`${this.plugin.settings.dailyGoal}`)
+					.onChange(async (value) => {
+						this.plugin.settings.dailyGoal = Number(value)
+						await this.plugin.saveSettings();
+					})
+				text.inputEl.type = 'number'
+			})
+
+		new Setting(containerEl)
+			.setName('Overall Goal')
+			.setDesc('Word Count for your overall goal')
+			.addText((text) => {
+				text.setPlaceholder('e.g. 50000')
+				text.setValue(`${this.plugin.settings.overallGoal}`)
+					.onChange(async (value) => {
+						this.plugin.settings.overallGoal = Number(value)
+						await this.plugin.saveSettings();
+					})
+				text.inputEl.type = 'number'
+			})
+
+
 		containerEl.createEl('h2', {text: 'Stats'});
 
 		new Setting(containerEl)
@@ -105,6 +146,5 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 					await this.plugin.emptyTotalStats()
 				})
 			)
-
 	}
 }

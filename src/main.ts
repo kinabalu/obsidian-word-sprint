@@ -25,6 +25,9 @@ const DEFAULT_SETTINGS: WordSprintSettings = {
 	yellowNoticeText: "Keep on writing, this is a sprint!",
 	redNoticeTimeout: 50,
 	redNoticeText: "Enjoy that break, get back to writing when you're back",
+	dailyGoal: null,
+	overallGoal: null,
+	defaultTab: "stats",
 }
 
 export default class WordSprintPlugin extends Plugin {

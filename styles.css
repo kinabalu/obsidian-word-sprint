@@ -1,9 +1,9 @@
-/*Center Content*/
+/* Center Content */
 #wordsprint #sprintActionPanel,
 #wordsprint .wordsWritten,
 #wordsprint #statsPanel,
 #wordsprint #sectionTab,
-#wordsprint #goalPanel,
+#wordsprint #goalsPanel,
 #wordsprint .secondsLeft {
     display: flex;
     align-content: center;
@@ -12,7 +12,7 @@
 }
 
 
-/*Status*/
+/* Status */
 #wordsprint .status {
     text-align: center;
     margin: 0.5rem;
@@ -39,14 +39,14 @@
 	background-color: green;
 }
 
-/*Time*/
+/* Time */
 #wordsprint .secondsLeft {
 	margin: .5em;
     font-size: 3em;
     line-height: 1em;
 }
 
-/*Buttons*/
+/* Buttons */
 #wordsprint #sprintActionPanel {
 	margin: 0.5rem;
     flex-direction: row;
@@ -71,11 +71,15 @@
 	margin: 0;
 }
 
-#wordsprint #sectionTab button .active {
+#wordsprint #sectionTab .statsTab.active {
 	background-color: var(--interactive-hover);
 }
 
-/*Stats*/
+#wordsprint #sectionTab .goalsTab.active {
+	background-color: var(--interactive-hover);
+}
+
+/* Stats */
 #wordsprint #statsPanel {
     flex-direction: column;
 }
@@ -93,20 +97,23 @@
 }
 
 /* Goals */
-#wordsprint #goalPanel {
+#wordsprint #goalsPanel {
 	flex-direction: column;
-}
-
-#wordsprint #sprintGoal .dailyGoal {
 	margin-top: 1rem;
 }
-#wordsprint #sprintGoal {
+
+#wordsprint #goalsPanel #sprintGoal {
 	padding: 2em;
 }
-#wordspring #goalPanel .goalPopup {
-	background-color: grey;
+
+#wordspring #goalsPanel .overallGoal {
+	margin: 0.5rem;
 }
 
-#wordspring #goalPanel .overallGoal {
-	margin: 0.5rem;
+#wordspring #goalsPanel #sprintGoal {
+	padding: 2em;
+}
+
+#wordspring #goalsPanel #sprintGoal .setGoalsButton {
+	background-color: var(--text-faint);
 }

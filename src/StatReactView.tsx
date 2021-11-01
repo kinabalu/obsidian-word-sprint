@@ -17,6 +17,11 @@ export const StatReactView = () => {
 		}, 0))
 		setWordCount(miniStats.wordCount)
 
+		setDailyGoal(plugin.settings.dailyGoal - dailyWordCount)
+		setOverallGoal(plugin.settings.overallGoal - plugin.sprintHistory.reduce((total: number, amount: SprintRunStat,) => {
+			return total + amount.totalWordsWritten
+		}, 0))
+
 		if (plugin.theSprint && plugin.theSprint.isStarted()) {
 			setSecondsLeft(miniStats.secondsLeft)
 			setWordCount(miniStats.wordCount)
@@ -33,7 +38,7 @@ export const StatReactView = () => {
 		}
 	}, 1000)
 
-	const [activeTab, setActiveTab] = React.useState('stats')
+	const [activeTab, setActiveTab] = React.useState(plugin.settings.defaultTab)
 
 	const [totalWordCount, setTotalWordCount] = React.useState(0)
 	const [dailyWordCount, setDailyWordCount] = React.useState(0)
@@ -43,6 +48,9 @@ export const StatReactView = () => {
 	const [status, setStatus] = React.useState(null)
 	const [statsAvailable, setStatsAvailable] = React.useState(false)
 	const [isSprintStarted, setIsSprintStarted] = React.useState(false)
+
+	const [dailyGoal, setDailyGoal] = React.useState(null)
+	const [overallGoal, setOverallGoal] = React.useState(null)
 
 	const renderStatusName = (status : string) => {
 		switch(status) {
@@ -101,12 +109,10 @@ export const StatReactView = () => {
 
 			<hr />
 
-			{/*
 			<div id="sectionTab">
 				<button className={`statsTab ${activeTab === 'stats' ? 'active' : ''}`} onClick={() => { setActiveTab('stats')}}>Stats</button>
 				<button className={`goalsTab ${activeTab === 'goals' ? 'active' : ''}`} onClick={() => { setActiveTab('goals')}}>Goals</button>
 			</div>
-			*/}
 			{activeTab === 'stats' &&
 				<div id="statsPanel">
 					{totalWordCount > 0 &&
@@ -131,21 +137,16 @@ export const StatReactView = () => {
 					}
 				</div>
 			}
-			{/*
 			{activeTab === 'goals' &&
-				<div id="goalPanel">
+				<div id="goalsPanel">
 					<div className="dailyGoal">
-						Daily Goal: None
+						Daily Goal: {numeral(dailyGoal).format('0,0')}
 					</div>
 					<div className="overallGoal">
-						Overall Goal: None
-					</div>
-					<div id="sprintGoal">
-						<button style={{backgroundColor: 'grey'}} className="goalPopup">Set Goals</button>
+						Overall Goal: {numeral(overallGoal).format('0,0')}
 					</div>
 				</div>
 			}
-			*/}
 		</div>
 	)
 }
