@@ -1,24 +1,9 @@
-import { WordsPerMinute } from "./settings";
 import {getWordCount, secondsToMMSS} from "./utils";
 
 import { moment } from 'obsidian'
 
 import {v4 as uuidv4} from 'uuid'
-
-export interface SprintRunStat {
-	id: string;
-	name: string;
-	created: number;
-	sprintLength: number;
-	elapsedSprintLength: number;
-	totalWordsWritten: number;
-	averageWordsPerMinute: number;
-	yellowNotices: number;
-	redNotices: number;
-	longestStretchNotWriting: number;
-	totalTimeNotWriting: number;
-	elapsedMilliseconds: number;
-}
+import {SprintRunStat} from "./types";
 
 export default class SprintRun {
 
@@ -35,10 +20,6 @@ export default class SprintRun {
 	lastWordTime : number = 0
 	previousWordCount : number
 	wordCount : number = 0
-	wordsPerMinute : WordsPerMinute[] = [{
-		previous: 0,
-		now: 0,
-	}];
 
 	latestMinute : number = 0
 	yellowNoticeCount : number = 0
@@ -95,8 +76,6 @@ export default class SprintRun {
 		this.totalTimeNotWriting += secondsSinceLastWord
 		this.lastWordTime = Date.now()
 		this.wordCount = getWordCount(contents)
-
-		this.wordsPerMinute[this.latestMinute].now = (this.getWordCountDisplay() - this.wordsPerMinute[this.latestMinute].previous)
 	}
 
 	/**
@@ -132,10 +111,6 @@ export default class SprintRun {
 		this.longestWritingStretch = 0
 		this.longestStretchNotWriting = 0
 		this.totalTimeNotWriting = 0
-		this.wordsPerMinute = [{
-			previous: 0,
-			now: 0
-		}]
 		this.yellowNoticeShown = false
 		this.redNoticeShown	= false
 
@@ -150,11 +125,6 @@ export default class SprintRun {
 
 			if (Math.floor(this.elapsedMilliseconds / 1000 / 60) > this.latestMinute) {
 				this.latestMinute = Math.floor(this.elapsedMilliseconds / 1000 / 60)
-
-				this.wordsPerMinute.push({
-					previous: this.getWordCountDisplay(),
-					now: 0,
-				})
 			}
 
 			let statusChanged = false
