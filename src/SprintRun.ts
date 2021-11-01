@@ -28,7 +28,6 @@ export default class SprintRun {
 	previousWordCount : number
 	wordCount : number = 0
 
-	latestMinute : number = 0
 	yellowNoticeCount : number = 0
 	redNoticeCount : number = 0
 	longestWritingStretch : number = 0
@@ -94,7 +93,8 @@ export default class SprintRun {
 
 		/* Net words calculation (NEW FEATURE)
 		   This may need to be a bit more granular, otherwise typo correction via ctrl+backspace
-		   will increase net words, even though we're just fixing a newly-added word.
+		   will increase net words, even though we're just fixing a newly-added word. As such,
+		   may want to relegate it to the main loop.
 		*/
 
 		let netWords : number = this.wordCount - this.wordsLastCount
@@ -153,10 +153,6 @@ export default class SprintRun {
 			this.millisecondsLeft = this.timeEnd - currentNow
 
 			const msSinceLastWord = Date.now() - this.lastWordTime
-
-			if (Math.floor(this.elapsedMilliseconds / 1000 / 60) > this.latestMinute) {
-				this.latestMinute = Math.floor(this.elapsedMilliseconds / 1000 / 60)
-			}
 
 			let statusChanged = false
 			if (msSinceLastWord >= this.yellowNoticeTimeout * 1000 && !this.yellowNoticeShown) {
