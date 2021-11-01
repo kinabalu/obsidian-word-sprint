@@ -4,17 +4,6 @@ import {secondsToMMSS} from "./utils";
 import numeral from 'numeral';
 import {SprintRunStat} from "./types";
 
-
-/*
-
-TODO: Get words added/deleted/net to fix the issue with 0 words when you've deleted a bunch of words.
-TODO: Fix the bug with total time not writing, since it is 1 minute 1 second when in fact the sprint was only 1 minute.
-This is probably a floor/ceiling/round issue, so that will need to be recitified. May have to do as recommended
-originally for the timings in the MMSS function. Also, the sprint ended when the timer hit 1 second, so that
-will need to be tested again and fix as necessary.
-*/
-
-
 export const StatReactView = () => {
 
 	const plugin = usePlugin()
