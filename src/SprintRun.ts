@@ -187,7 +187,6 @@ export default class SprintRun {
 	}
 
 	getStats() : SprintRunStat {
-
 		let averageWordsPerMinute = 0
 		if (Math.floor(this.elapsedMilliseconds / 1000 / 60) > 0) {
 			averageWordsPerMinute = this.getWordCountDisplay() / Math.floor(this.elapsedMilliseconds / 1000 / 60)

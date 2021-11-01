@@ -13,9 +13,9 @@ import numeral from 'numeral'
 
 import EndOfSprintStatsModal from './EndOfSprintStatsModal'
 import WordSprintSettingsTab from './WordSprintSettingsTab'
-import { WordSprintSettings } from './types'
+import {SprintRunStat, WordSprintSettings} from './types'
 import {getWordCount, secondsToHumanize} from './utils'
-import SprintRun, {SprintRunStat} from "./SprintRun";
+import SprintRun from "./SprintRun";
 import StatView, {STAT_VIEW_TYPE} from "./StatView";
 import {ICON_NAME, STATS_FILENAME} from "./constants";
 

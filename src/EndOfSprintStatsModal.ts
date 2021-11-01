@@ -1,7 +1,7 @@
 import {App, Modal, Setting} from "obsidian";
-import {SprintRunStat} from "./SprintRun";
 import {secondsToHumanize} from "./utils";
 import numeral from 'numeral'
+import {SprintRunStat} from "./types";
 
 export default class EndOfSprintStatsModal extends Modal {
 	sprintRunStat : SprintRunStat
