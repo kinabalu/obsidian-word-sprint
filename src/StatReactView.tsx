@@ -121,11 +121,11 @@ export const StatReactView = () => {
 				<button className="sprintStop"  disabled={!isSprintStarted} style={{ opacity: isSprintStarted ? 1 : 0.4 }} onClick={() => {stopSprint()}}>Stop</button>
 			</div>
 
-			<hr />
+			<hr style={{ marginBottom: 0 }} />
 
-			<div id="sectionTab">
-				<button className={`statsTab ${activeTab === 'stats' ? 'active' : ''}`} onClick={() => { setActiveTab('stats')}}>Stats</button>
-				<button className={`goalsTab ${activeTab === 'goals' ? 'active' : ''}`} onClick={() => { setActiveTab('goals')}}>Goals</button>
+			<div id="sectionTab" style={{ margin: 0, width: '100%'}}>
+				<button style={{ width: '100%'}} className={`statsTab ${activeTab === 'stats' ? 'active' : ''}`} onClick={() => { setActiveTab('stats')}}>Stats</button>
+				<button style={{ width: '100%'}} className={`goalsTab ${activeTab === 'goals' ? 'active' : ''}`} onClick={() => { setActiveTab('goals')}}>Goals</button>
 			</div>
 			{activeTab === 'stats' &&
 				<div id="statsPanel">
@@ -138,6 +138,9 @@ export const StatReactView = () => {
 						<div className="sprintDailyWordCount">
 							Daily Word
 							Count: {numeral(dailyWordCount + plugin.theSprint.getStats().totalWordsWritten).format('0,0')}
+						</div>
+						<div className="sprintCount">
+							Sprints: {numeral(plugin.sprintHistory.length).format('0,0')}
 						</div>
 					</>
 					}
