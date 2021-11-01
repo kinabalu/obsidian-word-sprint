@@ -59,12 +59,12 @@ export default class EndOfSprintStatsModal extends Modal {
 				text.setValue(`${secondsToHumanize(this.sprintRunStat.longestStretchNotWriting)}`)
 				text.setDisabled(true)
 			})
-		// new Setting(contentEl)
-		// 	.setName("Total Time Not Writing")
-		// 	.addText((text) => {
-		// 		text.setValue(`${secondsToHumanize(this.sprintRunStat.totalTimeNotWriting)}`)
-		// 		text.setDisabled(true)
-		// 	})
+		new Setting(contentEl)
+		 	.setName("Total Time Not Writing")
+		 	.addText((text) => {
+		 		text.setValue(`${secondsToHumanize(this.sprintRunStat.totalTimeNotWriting)}`)
+		 		text.setDisabled(true)
+		 	})
 	}
 
 	onClose() {
