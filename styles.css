@@ -56,7 +56,6 @@
 #wordsprint #sprintActionPanel .sprintStart {
 	margin: 0.5rem;
 	background-color: var(--background-modifier-success);
-    color: var(--text-on-accent);
 }
 
 #wordsprint #sprintActionPanel .sprintStop {
@@ -71,12 +70,12 @@
 	margin: 0;
 }
 
-#wordsprint #sectionTab .statsTab.active {
-	background-color: var(--interactive-hover);
+#wordsprint #sectionTab .active {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
 }
-
-#wordsprint #sectionTab .goalsTab.active {
-	background-color: var(--interactive-hover);
+#wordsprint #sectionTab button:not(.active):not(:hover) {
+	background-color: var(--background-secondary-alt);
 }
 
 /* Stats */
@@ -93,7 +92,8 @@
 }
 
 #wordsprint #sprintViewStats .viewStats {
-    background-color: var(--text-faint);
+	background-color: var(--text-faint);
+	color: var(--text-on-accent);
 }
 
 /* Goals */
