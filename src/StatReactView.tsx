@@ -67,6 +67,9 @@ export const StatReactView = () => {
 	const [overallGoal, setOverallGoal] = React.useState(null)
 
 	const renderStatusName = (status : string) => {
+		if (!plugin.settings.showLagNotices) {
+			return 'No Notices'
+		}
 		switch(status) {
 			case 'GREEN':
 				return 'Good'
@@ -80,6 +83,10 @@ export const StatReactView = () => {
 	}
 
 	const renderStatusClass = (status : string) => {
+		if (!plugin.settings.showLagNotices) {
+			return 'pending'
+		}
+
 		switch(status) {
 			case 'GREEN':
 				return 'success'

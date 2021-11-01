@@ -42,6 +42,7 @@ export default class WordSprintPlugin extends Plugin {
 	sprintHistory : SprintRunStat[] = []
 
 	async emptyTotalStats() {
+		await this.saveStats(`${STATS_FILENAME}-${Date.now()}`)
 		this.sprintHistory = []
 		await this.saveStats()
 	}
@@ -75,15 +76,15 @@ export default class WordSprintPlugin extends Plugin {
 			&& now <= moment().endOf('day').toDate().valueOf()
 	}
 
-	async saveStats() {
+	async saveStats(statsFilename : string = STATS_FILENAME) {
 		const adapter = this.app.vault.adapter;
 		const dir = this.manifest.dir;
-		const path = normalizePath(`${dir}/${STATS_FILENAME}`)
+		const path = normalizePath(`${dir}/${statsFilename}`)
 
 		try {
 			await adapter.write(path, JSON.stringify(this.sprintHistory))
 		} catch(error) {
-			new Notice(`Unable to write to ${STATS_FILENAME} file`)
+			new Notice(`Unable to write to ${statsFilename} file`)
 			console.error(error)
 		}
 	}
@@ -134,6 +135,55 @@ export default class WordSprintPlugin extends Plugin {
 				editor.replaceSelection(statsText)
 			}
 		})
+		this.addCommand({
+			id: 'insert-average-word-sprint-stats',
+			name: 'Insert Average Word Sprint Stats',
+			editorCallback: async (editor: Editor) => {
+				let statsText : string = '';
+
+				if (this.theSprint && this.theSprint.isStarted()) {
+					new Notice("Sprint still going, but here's the stats as of this moment")
+				}
+
+				statsText = '### Average Word Sprint Stats\n'
+				statsText += `Total Sprints: ${this.sprintHistory.length}\n`
+				statsText += `Words Written: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.totalWordsWritten
+					return total / array.length
+				}, 0)}\n`
+
+				statsText += `Average Words per Minute: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.averageWordsPerMinute
+					return total / array.length
+				}, 0)}\n`
+
+				statsText += `Red Notices: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.redNotices
+					return total / array.length
+				}, 0)}\n`
+
+				const yellowNotices = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.yellowNotices
+					return total / array.length
+				}, 0)
+				statsText += `Yellow Notices: ${yellowNotices}\n`
+
+				const averageLongestStretchNotWriting = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.longestStretchNotWriting
+					return total / array.length
+				}, 0)
+				statsText += `Longest Stretches Not Writing: ${secondsToHumanize(averageLongestStretchNotWriting)}\n`
+
+				const averageTimeNotWriting = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.totalTimeNotWriting
+					return total / array.length
+				}, 0)
+				statsText += `Time Not Writing: ${secondsToHumanize(averageTimeNotWriting)}\n`
+
+				editor.replaceSelection(statsText)
+			}
+		})
+
 		this.addCommand({
 			id: 'start-word-sprint',
 			name: 'Start Word Sprint',
