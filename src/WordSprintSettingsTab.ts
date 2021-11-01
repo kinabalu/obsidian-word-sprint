@@ -139,7 +139,7 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Reset all stats')
-			.setDesc('Remove all stats shown for the tool')
+			.setDesc('Archives and remove all stats shown for the tool')
 			.addButton(button => button
 				.setButtonText("Reset All Stats")
 				.onClick(async () => {
