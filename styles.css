@@ -89,7 +89,7 @@
 }
 
 #wordsprint #sprintViewStats {
-    padding: 2em;
+	padding: 1em 2em 2em;
 }
 
 #wordsprint #sprintViewStats .viewStats {

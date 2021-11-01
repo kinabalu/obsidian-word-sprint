@@ -1,8 +1,8 @@
 import * as React from "react"
 import useInterval, {usePlugin} from './hooks'
-import {SprintRunStat} from "./types";
 import {secondsToMMSS} from "./utils";
 import numeral from 'numeral';
+import {SprintRunStat} from "./types";
 
 
 /*
@@ -59,7 +59,7 @@ export const StatReactView = () => {
 
 	const [wordCount, setWordCount] = React.useState(null)
 	const [secondsLeft, setSecondsLeft] = React.useState(null)
-	const [status, setStatus] = React.useState(null)
+	const [status, setStatus] = React.useState<string>(null)
 	const [statsAvailable, setStatsAvailable] = React.useState(false)
 	const [isSprintStarted, setIsSprintStarted] = React.useState(false)
 
