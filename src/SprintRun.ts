@@ -215,7 +215,7 @@ export default class SprintRun {
 			id: this.id,
 			name: '',
 			sprintLength: this.sprintLength,
-			elapsedSprintLength: Math.ceil(this.elapsedMilliseconds / 1000),
+			elapsedSprintLength: Math.floor(this.elapsedMilliseconds / 1000),
 			totalWordsWritten: this.getWordCountDisplay(),
 			averageWordsPerMinute: averageWordsPerMinute,
 			yellowNotices: this.yellowNoticeCount,
