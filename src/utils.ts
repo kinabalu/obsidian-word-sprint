@@ -1,4 +1,4 @@
-import numeral from "numeral";
+import numeral from 'numeral'
 
 /**
  * Credit: better-word-count by Luke Leppan (https://github.com/lukeleppan/better-word-count)
