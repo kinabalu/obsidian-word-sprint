@@ -146,6 +146,7 @@ export default class WordSprintPlugin extends Plugin {
 				}
 
 				statsText = '### Average Word Sprint Stats\n'
+				statsText += `Total Sprints: ${this.sprintHistory.length}\n`
 				statsText += `Words Written: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.totalWordsWritten
 					return total / array.length
