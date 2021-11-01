@@ -23,4 +23,7 @@ export interface SprintRunStat {
 	longestStretchNotWriting: number;
 	totalTimeNotWriting: number;
 	elapsedMilliseconds: number;
+	wordsAdded: number,
+	wordsDeleted: number,
+	wordsNet: number,
 }
