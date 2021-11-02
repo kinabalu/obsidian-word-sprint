@@ -18,6 +18,8 @@ import {getWordCount, secondsToHumanize} from './utils'
 import SprintRun from "./SprintRun";
 import StatView, {STAT_VIEW_TYPE} from "./StatView";
 import {ICON_NAME, STATS_FILENAME} from "./constants";
+import StartWordSprint from "./commands/StartWordSprint";
+import ChangeSprintTimeModal from "./ChangeSprintTimeModal";
 
 const DEFAULT_SETTINGS: WordSprintSettings = {
 	sprintLength: 25,
@@ -118,7 +120,7 @@ export default class WordSprintPlugin extends Plugin {
 					new Notice("Sprint still going, but here's the stats as of this moment")
 				}
 
-				const stats = this.theSprint.getStats()
+				const stats = this.sprintHistory[this.sprintHistory.length - 1]
 
 				if ((stats.sprintLength * 60) > stats.elapsedSprintLength) {
 					statsText = `Sprint Length: ${secondsToHumanize(stats.elapsedSprintLength)} of ${secondsToHumanize(stats.sprintLength * 60)}\n`
@@ -229,6 +231,14 @@ export default class WordSprintPlugin extends Plugin {
 		})
 
 		this.addCommand({
+			id: 'change-word-sprint-length',
+			name: 'Change Word Sprint Length',
+			callback: () => {
+				this.showChangeSprintTimeModal()
+			}
+		})
+
+		this.addCommand({
 			id: 'stop-word-sprint',
 			name: 'Stop Word Sprint',
 			callback: () => {
@@ -305,11 +315,19 @@ export default class WordSprintPlugin extends Plugin {
 		this.registerInterval(sprintInterval);
 	}
 
+	showChangeSprintTimeModal() {
+		if (this.theSprint.isStarted()) {
+			new Notice("Cannot change sprint time during a sprint!")
+		} else {
+			new ChangeSprintTimeModal(this.app, this).open()
+		}
+	}
+
 	showEndOfSprintStatsModal() {
 		if (this.theSprint.isStarted()) {
 			new EndOfSprintStatsModal(this.app, this.theSprint.getStats()).open()
 		} else if (this.sprintHistory.length > 0) {
-			new EndOfSprintStatsModal(this.app, this.sprintHistory[0]).open()
+			new EndOfSprintStatsModal(this.app, this.sprintHistory[this.sprintHistory.length - 1]).open()
 		} else {
 			new Notice("No stats found to show!")
 		}

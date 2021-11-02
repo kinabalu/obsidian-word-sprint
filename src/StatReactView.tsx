@@ -9,6 +9,7 @@ export const StatReactView = () => {
 	const plugin = usePlugin()
 
 	useInterval(() => {
+		setSprintLength(plugin.theSprint.sprintLength)
 		const miniStats = plugin.theSprint.getMiniStats()
 		setStatsAvailable(plugin.theSprint.getStats() !== null)
 
@@ -54,6 +55,8 @@ export const StatReactView = () => {
 
 	const [dailyGoal, setDailyGoal] = React.useState(null)
 	const [overallGoal, setOverallGoal] = React.useState(null)
+
+	const [sprintLength, setSprintLength] = React.useState(plugin.theSprint.sprintLength)
 
 	const renderStatusName = (status : string) => {
 		if (!plugin.settings.showLagNotices) {
@@ -109,7 +112,7 @@ export const StatReactView = () => {
 			{ !isSprintStarted && (
 				<>
 					<div className={`status ${renderStatusClass(status)}`}>{renderStatusName(status)}</div>
-					<div className="secondsLeft">{secondsToMMSS(plugin.theSprint.sprintLength * 60)}</div>
+					<div className="hand secondsLeft" onClick={() => { plugin.showChangeSprintTimeModal() }}>{secondsToMMSS(sprintLength * 60)}</div>
 				</>
 			)}
 			<div id="sprintActionPanel">
