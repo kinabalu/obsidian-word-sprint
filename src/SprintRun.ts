@@ -17,9 +17,6 @@ export default class SprintRun {
 	sprintStarted : boolean = false
 	sprintComplete : boolean = false
 
-	timeStart : number = 0
-	timeEnd : number = 0
-
 	wordsLastCount: number = 0
 	wordsAdded: number = 0
 	wordsDeleted: number = 0
