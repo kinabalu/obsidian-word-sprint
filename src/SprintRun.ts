@@ -17,11 +17,14 @@ export default class SprintRun {
 	sprintStarted : boolean = false
 	sprintComplete : boolean = false
 
+	wordsLastCount: number = 0
+	wordsAdded: number = 0
+	wordsDeleted: number = 0
+
 	lastWordTime : number = 0
 	previousWordCount : number
 	wordCount : number = 0
 
-	latestMinute : number = 0
 	yellowNoticeCount : number = 0
 	redNoticeCount : number = 0
 	longestWritingStretch : number = 0
@@ -55,6 +58,9 @@ export default class SprintRun {
 	updateSprintLength(sprintLength : number) {
 		this.sprintLength = sprintLength
 		this.sprintLengthInMS = this.sprintLength * 60 * 1000
+		if (!this.isStarted()) {
+		   this.millisecondsLeft = this.sprintLengthInMS
+		}
 	}
 
 	updateNoticeTimeout(yellowNoticeTimeout : number, redNoticeTimeout : number) {
@@ -81,6 +87,20 @@ export default class SprintRun {
 		this.updateNotWriting(currentNow)
 		this.lastWordTime = currentNow
 		this.wordCount = getWordCount(contents)
+
+		/* Net words calculation (NEW FEATURE)
+		   This may need to be a bit more granular, otherwise typo correction via ctrl+backspace
+		   will increase net words, even though we're just fixing a newly-added word. As such,
+		   may want to relegate it to the main loop.
+		*/
+
+		let netWords : number = this.wordCount - this.wordsLastCount
+		this.wordsLastCount = this.wordCount
+		this.wordsAdded += Math.max(netWords, 0)
+		this.wordsDeleted += Math.abs(Math.min(netWords, 0))
+
+		// End new feature code
+
 	}
 
 	/**
@@ -104,6 +124,7 @@ export default class SprintRun {
 	startSprint(previousWordCount : number, update : (status : string, statusChanged : boolean) => void, endOfSprintCallback : (sprintRunStat : SprintRunStat) => void): number {
 		this.endOfSprintCallback = endOfSprintCallback
 		this.previousWordCount = previousWordCount
+		this.wordsLastCount = previousWordCount
 
 		const now = Date.now()
 		this.created = moment.utc().valueOf()
@@ -127,10 +148,6 @@ export default class SprintRun {
 			this.millisecondsLeft = this.sprintLengthInMS - this.elapsedMilliseconds
 
 			const msSinceLastWord = Date.now() - this.lastWordTime
-
-			if (Math.floor(this.elapsedMilliseconds / 1000 / 60) > this.latestMinute) {
-				this.latestMinute = Math.floor(this.elapsedMilliseconds / 1000 / 60)
-			}
 
 			let statusChanged = false
 			if (msSinceLastWord >= this.yellowNoticeTimeout * 1000 && !this.yellowNoticeShown) {
@@ -175,7 +192,6 @@ export default class SprintRun {
 			// this must be called before we getStats(), otherwise the data will be missing
 			this.updateNotWriting(Date.now())
 			const stats = this.getStats()
-
 			this.endOfSprintCallback(stats)
 			this.sprintStarted = false
 			this.sprintComplete = true
@@ -187,10 +203,8 @@ export default class SprintRun {
 	}
 
 	getStats() : SprintRunStat {
-		let averageWordsPerMinute = 0
-		if (Math.floor(this.elapsedMilliseconds / 1000 / 60) > 0) {
-			averageWordsPerMinute = this.getWordCountDisplay() / Math.floor(this.elapsedMilliseconds / 1000 / 60)
-		}
+
+		let averageWordsPerMinute = this.getWordCountDisplay() * 1000 * 60 / Math.floor(Math.max(this.elapsedMilliseconds, 1))
 
 		return {
 			id: this.id,
@@ -204,6 +218,9 @@ export default class SprintRun {
 			longestStretchNotWriting: this.longestStretchNotWriting,
 			totalTimeNotWriting: this.totalTimeNotWriting,
 			elapsedMilliseconds: this.elapsedMilliseconds,
+			wordsAdded: this.wordsAdded,
+			wordsDeleted: this.wordsDeleted,
+			wordsNet: this.wordsAdded - this.wordsDeleted,
 			created: this.created,
 		} as SprintRunStat
 	}

@@ -29,6 +29,9 @@ export const StatReactView = () => {
 			setIsSprintStarted(plugin.theSprint.isStarted())
 			setStatus(plugin.theSprint.status)
 		} else {
+			if (plugin.theSprint) {
+				setSecondsLeft(miniStats.secondsLeft)
+			}
 			setIsSprintStarted(false)
 		}
 
