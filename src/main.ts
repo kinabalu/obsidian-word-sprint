@@ -154,10 +154,10 @@ export default class WordSprintPlugin extends Plugin {
 					total += amount.elapsedSprintLength
 					return total
 				}, 0))}\n`
-				statsText += `Average Sprint Length: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				statsText += `Average Sprint Length: ${secondsToHumanize(this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.sprintLength
-					return total / array.length
-				}, 0)}\n`
+					return (total / array.length)*60
+				}, 0))}\n`
 				statsText += `Words Written: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.totalWordsWritten
 					return total / array.length
