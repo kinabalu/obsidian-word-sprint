@@ -18,7 +18,6 @@ import {getWordCount, secondsToHumanize} from './utils'
 import SprintRun from "./SprintRun";
 import StatView, {STAT_VIEW_TYPE} from "./StatView";
 import {ICON_NAME, STATS_FILENAME} from "./constants";
-import StartWordSprint from "./commands/StartWordSprint";
 import ChangeSprintTimeModal from "./ChangeSprintTimeModal";
 
 const DEFAULT_SETTINGS: WordSprintSettings = {
@@ -130,7 +129,7 @@ export default class WordSprintPlugin extends Plugin {
 
 				const stats = this.sprintHistory[this.sprintHistory.length - 1]
 
-				statsText = `### Latest Word Sprint ${stats.created}\n`
+				statsText = `### Latest Word Sprint ${moment(stats.created).format('YYYY-MM-DD HH:mm:ss')}\n`
 				if ((stats.sprintLength * 60) > stats.elapsedSprintLength) {
 					statsText += `Sprint Length: ${secondsToHumanize(stats.elapsedSprintLength)} of ${secondsToHumanize(stats.sprintLength * 60)}\n`
 				} else {
