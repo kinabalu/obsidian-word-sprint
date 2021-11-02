@@ -126,6 +126,9 @@ export default class WordSprintPlugin extends Plugin {
 					statsText = `Sprint Length: ${secondsToHumanize(stats.sprintLength * 60)}\n`
 				}
 				statsText += `Total Words Written: ${stats.totalWordsWritten}\n`
+				statsText += `Total Words Added: ${stats.wordsAdded}\n`
+				statsText += `Total Words Deleted: ${stats.wordsDeleted}\n`
+				statsText += `Total Net Words: ${stats.wordsNet}\n`
 				statsText += `Average Words Per Minute: ${numeral(stats.averageWordsPerMinute).format('0.0')}\n`
 				statsText += `Yellow Notices: ${stats.yellowNotices}\n`
 				statsText += `Red Notices: ${stats.redNotices}\n`
@@ -147,15 +150,35 @@ export default class WordSprintPlugin extends Plugin {
 
 				statsText = '### Average Word Sprint Stats\n'
 				statsText += `Total Sprints: ${this.sprintHistory.length}\n`
+				statsText += `Total Sprinting Time: ${secondsToHumanize(this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.elapsedSprintLength
+					return total
+				}, 0))}\n`
+				statsText += `Average Sprint Length: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.sprintLength
+					return total / array.length
+				}, 0)}\n`
 				statsText += `Words Written: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.totalWordsWritten
 					return total / array.length
 				}, 0)}\n`
-
-				statsText += `Average Words per Minute: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
-					total += amount.averageWordsPerMinute
+				statsText += `Words Added: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.wordsAdded
 					return total / array.length
 				}, 0)}\n`
+				statsText += `Words Deleted: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.wordsDeleted
+					return total / array.length
+				}, 0)}\n`
+				statsText += `Net Words: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.wordsNet
+					return total / array.length
+				}, 0)}\n`
+
+				statsText += `Average Words per Minute: ${numeral(this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.averageWordsPerMinute
+					return total / array.length
+				}, 0)).format('0.00')}\n`
 
 				statsText += `Red Notices: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.redNotices
