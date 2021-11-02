@@ -111,6 +111,14 @@ export default class WordSprintPlugin extends Plugin {
 		)
 
 		this.addCommand({
+			id: 'show-word-sprint-leaf',
+			name: 'Show Word Sprint Leaf',
+			callback: () => {
+				this.activateView()
+			}
+		})
+
+		this.addCommand({
 			id: 'insert-last-word-sprint-stats',
 			name: 'Insert Last Word Sprint Stats',
 			editorCallback: async (editor: Editor) => {
@@ -122,20 +130,21 @@ export default class WordSprintPlugin extends Plugin {
 
 				const stats = this.sprintHistory[this.sprintHistory.length - 1]
 
+				statsText = `### Latest Word Sprint ${stats.created}\n`
 				if ((stats.sprintLength * 60) > stats.elapsedSprintLength) {
-					statsText = `Sprint Length: ${secondsToHumanize(stats.elapsedSprintLength)} of ${secondsToHumanize(stats.sprintLength * 60)}\n`
+					statsText += `Sprint Length: ${secondsToHumanize(stats.elapsedSprintLength)} of ${secondsToHumanize(stats.sprintLength * 60)}\n`
 				} else {
-					statsText = `Sprint Length: ${secondsToHumanize(stats.sprintLength * 60)}\n`
+					statsText += `Sprint Length: ${secondsToHumanize(stats.sprintLength * 60)}\n`
 				}
 				statsText += `Total Words Written: ${stats.totalWordsWritten}\n`
-				statsText += `Total Words Added: ${stats.wordsAdded}\n`
-				statsText += `Total Words Deleted: ${stats.wordsDeleted}\n`
-				statsText += `Total Net Words: ${stats.wordsNet}\n`
 				statsText += `Average Words Per Minute: ${numeral(stats.averageWordsPerMinute).format('0.0')}\n`
 				statsText += `Yellow Notices: ${stats.yellowNotices}\n`
 				statsText += `Red Notices: ${stats.redNotices}\n`
 				statsText += `Longest Stretch Not Writing: ${secondsToHumanize(stats.longestStretchNotWriting)}\n`
 				statsText += `Total Time Not Writing: ${secondsToHumanize(stats.totalTimeNotWriting)}\n`
+				statsText += `Total Words Added: ${stats.wordsAdded}\n`
+				statsText += `Total Words Deleted: ${stats.wordsDeleted}\n`
+				statsText += `Total Net Words: ${stats.wordsNet}\n`
 
 				editor.replaceSelection(statsText)
 			}
@@ -170,6 +179,36 @@ export default class WordSprintPlugin extends Plugin {
 				}, 0) / totalSprints
 				statsText += `Average Sprint Length: ${secondsToHumanize(averageSprintLength)}\n`
 
+				const averageWPM = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.averageWordsPerMinute
+					return total
+				}, 0) / totalSprints
+				statsText += `Average Words per Minute: ${numeral(averageWPM).format('0.00')}\n`
+
+				const redNotices = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.redNotices
+					return total
+				}, 0)  / totalSprints
+				statsText += `Average Red Notices: ${numeral(redNotices).format('0.00')}\n`
+
+				const yellowNotices = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.yellowNotices
+					return total
+				}, 0) / totalSprints
+				statsText += `Average Yellow Notices: ${numeral(yellowNotices).format('0.00')}\n`
+
+				const averageLongestStretchNotWriting = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.longestStretchNotWriting
+					return total
+				}, 0) / totalSprints
+				statsText += `Average Longest Stretches Not Writing: ${secondsToHumanize(averageLongestStretchNotWriting)}\n`
+
+				const averageTimeNotWriting = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.totalTimeNotWriting
+					return total
+				}, 0) / totalSprints
+				statsText += `Average Time Not Writing: ${secondsToHumanize(averageTimeNotWriting)}\n`
+
 				const wordsAdded = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.wordsAdded
 					return total
@@ -184,39 +223,9 @@ export default class WordSprintPlugin extends Plugin {
 
 				const netWords = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.wordsNet
-					return total 
+					return total
 				}, 0) / totalSprints
 				statsText += `Average Net Words: ${numeral(netWords).format('0.00')}\n`
-
-				const averageWPM = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
-					total += amount.averageWordsPerMinute
-					return total
-				}, 0) / totalSprints
-				statsText += `Average Words per Minute: ${numeral(averageWPM).format('0.00')}\n`
-
-				const redNotices = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
-					total += amount.redNotices
-					return total
-				}, 0)  / totalSprints
-				statsText += `Average Red Notices: ${redNotices}\n`
-
-				const yellowNotices = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
-					total += amount.yellowNotices
-					return total
-				}, 0) / totalSprints
-				statsText += `Average Yellow Notices: ${yellowNotices}\n`
-
-				const averageLongestStretchNotWriting = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
-					total += amount.longestStretchNotWriting
-					return total
-				}, 0) / totalSprints
-				statsText += `Average Longest Stretches Not Writing: ${secondsToHumanize(averageLongestStretchNotWriting)}\n`
-
-				const averageTimeNotWriting = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
-					total += amount.totalTimeNotWriting
-					return total
-				}, 0) / totalSprints
-				statsText += `Average Time Not Writing: ${secondsToHumanize(averageTimeNotWriting)}\n`
 
 				editor.replaceSelection(statsText)
 			}
