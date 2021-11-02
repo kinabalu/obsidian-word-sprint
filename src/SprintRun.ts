@@ -131,8 +131,6 @@ export default class SprintRun {
 
 		const now = Date.now()
 		this.created = moment.utc().valueOf()
-		this.timeStart = now
-		this.timeEnd = now + this.sprintLengthInMS
 		this.lastWordTime = now
 		this.sprintStarted = true
 
@@ -150,7 +148,7 @@ export default class SprintRun {
 			this.elapsedMilliseconds = currentNow - now
 
 			this.rand = Math.floor(Math.random() * (101));
-			this.millisecondsLeft = this.timeEnd - currentNow
+			this.millisecondsLeft = this.sprintLengthInMS - this.elapsedMilliseconds
 
 			const msSinceLastWord = Date.now() - this.lastWordTime
 
