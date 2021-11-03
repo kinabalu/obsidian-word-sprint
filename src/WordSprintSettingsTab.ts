@@ -150,28 +150,32 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 						this.plugin.settings.nanowrimoProjectName = options[value]
 
 						await this.plugin.saveSettings();
+						this.display()
 					})
 				})
 
-			new Setting(containerEl)
-				.setName('Project Challenge')
-				.setDesc('Choose the project challenge you would like to update word count for')
-				.addDropdown(async (dropdown) => {
-					const nanowrimoApi = new NanowrimoApi(this.plugin.settings.nanowrimoAuthToken)
-					const projectChallengesResponse = await nanowrimoApi.getProjectChallenges(`${this.plugin.settings.nanowrimoProjectId}`)
+			if (this.plugin.settings.nanowrimoProjectId) {
+				new Setting(containerEl)
+					.setName('Project Challenge')
+					.setDesc('Choose the project challenge you would like to update word count for')
+					.addDropdown(async (dropdown) => {
+						const nanowrimoApi = new NanowrimoApi(this.plugin.settings.nanowrimoAuthToken)
+						const projectChallengesResponse = await nanowrimoApi.getProjectChallenges(`${this.plugin.settings.nanowrimoProjectId}`)
 
-					const options = projectChallengesResponse.data.reduce((existing : any, projectChallenge : any,) : any => {
-						return {...existing, [projectChallenge.id]: projectChallenge.attributes.name}
-					}, {0: 'Select A Project'})
+						const options = projectChallengesResponse.data.reduce((existing: any, projectChallenge: any,): any => {
+							return {...existing, [projectChallenge.id]: projectChallenge.attributes.name}
+						}, {0: 'Select A Project'})
 
-					dropdown.addOptions(options)
-					dropdown.setValue(`${this.plugin.settings.nanowrimoProjectChallengeId}`)
-					dropdown.onChange(async (value) => {
-						this.plugin.settings.nanowrimoProjectChallengeId = Number(value)
+						dropdown.addOptions(options)
+						dropdown.setValue(`${this.plugin.settings.nanowrimoProjectChallengeId}`)
+						dropdown.onChange(async (value) => {
+							this.plugin.settings.nanowrimoProjectChallengeId = Number(value)
 
-						await this.plugin.saveSettings();
+							await this.plugin.saveSettings();
+							this.display()
+						})
 					})
-				})
+			}
 
 			new Setting(containerEl)
 				.addButton(button => button
@@ -183,6 +187,7 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 						delete this.plugin.settings.nanowrimoUserId
 
 						await this.plugin.saveSettings();
+						this.display()
 					})
 				)
 
@@ -218,8 +223,8 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 						const userResponse = await nanowrimoApi.getUser(nanoUsername)
 
 						this.plugin.settings.nanowrimoUserId = userResponse.data.id
-
 						await this.plugin.saveSettings();
+						this.display()
 					})
 				)
 		}

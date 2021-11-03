@@ -174,7 +174,7 @@ export default class SprintRun {
 				this.sprintComplete = true
 				this.updateNotWriting(currentNow)
 				window.clearInterval(this.sprintInterval)
-\
+
 				endOfSprintCallback(this.getStats())
 			}
 		}, 1000)
