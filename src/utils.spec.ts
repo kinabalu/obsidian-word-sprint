@@ -20,6 +20,26 @@ describe('secondsToHumanize', () => {
 	it('should return 2 minutes 2 seconds given 122', () => {
 		expect(secondsToHumanize(122)).toEqual('2 minutes 2 seconds')
 	})
+
+	it('should return 59 minutes 59 seconds given 3599.4', () => {
+		expect(secondsToHumanize(3599.4)).toEqual('59 minutes 59 seconds')
+	})
+
+	it('should return 1 hour given 3599.5', () => {
+		expect(secondsToHumanize(3599.5)).toEqual('1 hour')
+	})
+
+	it('should return 3 hours 2 seconds given 10802', () => {
+		expect(secondsToHumanize(10802)).toEqual('3 hours 2 seconds')
+	})
+
+	it('should return 1 hour 2 minutes 2 seconds given 3722', () => {
+		expect(secondsToHumanize(3722)).toEqual('1 hour 2 minutes 2 seconds')
+	})
+
+	it('should return 1 hour given 3600', () => {
+		expect(secondsToHumanize(3600)).toEqual('1 hour')
+	})
 })
 
 describe('secondsToMMSS', () => {
