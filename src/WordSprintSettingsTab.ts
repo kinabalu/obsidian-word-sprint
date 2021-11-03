@@ -129,7 +129,7 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 
 		let nanoUsername : string, nanoPassword : string = null
 
-		containerEl.createEl('h2', {text: 'NanoWrimo'});
+		containerEl.createEl('h2', {text: 'NanoWriMo'});
 
 		if (this.plugin.settings.nanowrimoAuthToken && this.plugin.settings.nanowrimoUserId) {
 			new Setting(containerEl)
