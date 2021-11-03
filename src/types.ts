@@ -8,6 +8,11 @@ export interface WordSprintSettings {
 	dailyGoal: number;
 	overallGoal: number;
 	defaultTab: string;
+	nanowrimoAuthToken: string;
+	nanowrimoUserId: number;
+	nanowrimoProjectId: number;
+	nanowrimoProjectChallengeId: number;
+	nanowrimoProjectName: number;
 }
 
 export interface SprintRunStat {
