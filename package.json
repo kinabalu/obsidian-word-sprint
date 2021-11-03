@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-word-sprint",
-	"version": "0.1.7",
+	"version": "0.2.0",
 	"description": "Word Sprint for Obsidian plugin for your writing projects like Nanowrimo",
 	"main": "main.js",
 	"scripts": {
