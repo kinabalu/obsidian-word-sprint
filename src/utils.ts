@@ -27,16 +27,24 @@ export function getWordCount(text: string): number {
 }
 
 export function secondsToHumanize(seconds : number) {
-	const minutes = ~~(Math.round(seconds) / 60)
-	const secondsForFormatting = (Math.round(seconds) % 60)
+	seconds = Math.round(seconds) // no point running Math.round 3 times
+	const hours = ~~(seconds / 3600)
+	const minutes = ~~((seconds % 3600) / 60)
+	const secondsForFormatting = seconds % 60
 
 	let text : string = ''
 
-	if (seconds >= 60) {
+	if (hours > 0) {
+		text += `${numeral(hours).format('0')} hour${hours > 1 ? 's' : ''}`
+	}
+	if (minutes > 0) {
+		if (hours > 0) {
+			text += ' '
+		}
 		text += `${numeral(minutes).format('0')} minute${minutes > 1 ? 's' : ''}`
 	}
-	if (seconds % 60 > 0) {
-		if (seconds > 60) {
+	if (secondsForFormatting > 0) {
+		if (minutes > 0 || hours > 0) {
 			text += ' '
 		}
 		text += `${numeral(secondsForFormatting).format('0')} second${secondsForFormatting > 1 ? 's' : ''}`
