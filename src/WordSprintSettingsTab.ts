@@ -1,5 +1,7 @@
-import {App, PluginSettingTab, Setting} from "obsidian";
+import {App, PluginSettingTab, Setting, request} from "obsidian";
 import WordSprintPlugin from "./main";
+import {SprintRunStat} from "./types";
+import NanowrimoApi from "./nanowrimo-api";
 
 export default class WordSprintSettingsTab extends PluginSettingTab {
 	plugin: WordSprintPlugin;
@@ -125,6 +127,82 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 				text.inputEl.type = 'number'
 			})
 
+		let nanoUsername : string, nanoPassword : string = null
+
+		containerEl.createEl('h2', {text: 'NanoWrimo'});
+
+		if (this.plugin.settings.nanowrimoAuthToken && this.plugin.settings.nanowrimoUserId) {
+			new Setting(containerEl)
+				.setName('Project')
+				.setDesc('Choose which project you would like to update word count for')
+				.addDropdown(async (dropdown) => {
+					const nanowrimoApi = new NanowrimoApi(this.plugin.settings.nanowrimoAuthToken)
+					const projectsResponse = await nanowrimoApi.getProjects(`${this.plugin.settings.nanowrimoUserId}`)
+
+					const options = projectsResponse.data.reduce((existing : any, project : any,) : any => {
+						return {...existing, [project.id]: project.attributes.title}
+					}, {0: 'Select A Project'})
+
+					dropdown.addOptions(options)
+					dropdown.setValue(`${this.plugin.settings.nanowrimoProjectId}`)
+					dropdown.onChange(async (value) => {
+						this.plugin.settings.nanowrimoProjectId = Number(value)
+						this.plugin.settings.nanowrimoProjectName = options[value]
+
+						await this.plugin.saveSettings();
+					})
+				})
+
+			new Setting(containerEl)
+				.addButton(button => button
+					.setButtonText("Logout")
+					.onClick(async () => {
+						delete this.plugin.settings.nanowrimoAuthToken
+						delete this.plugin.settings.nanowrimoProjectId
+						delete this.plugin.settings.nanowrimoProjectName
+						delete this.plugin.settings.nanowrimoUserId
+
+						await this.plugin.saveSettings();
+					})
+				)
+
+		} else {
+			new Setting(containerEl)
+				.setName('Username')
+				.addText((text) => {
+					text.setPlaceholder('username')
+					text.onChange(async (value) => {
+						nanoUsername = value
+					})
+				})
+
+			new Setting(containerEl)
+				.setName('Password')
+				.addText((text) => {
+					text.setPlaceholder('password')
+					text.inputEl.type = 'password'
+					text.onChange(async (value) => {
+						nanoPassword = value
+					})
+				})
+
+
+			new Setting(containerEl)
+				.addButton(button => button
+					.setButtonText("Login")
+					.onClick(async () => {
+						const authToken = await NanowrimoApi.login(nanoUsername, nanoPassword)
+						this.plugin.settings.nanowrimoAuthToken = authToken
+
+						const nanowrimoApi = new NanowrimoApi(authToken)
+						const userResponse = await nanowrimoApi.getUser(nanoUsername)
+
+						this.plugin.settings.nanowrimoUserId = userResponse.data.id
+
+						await this.plugin.saveSettings();
+					})
+				)
+		}
 
 		containerEl.createEl('h2', {text: 'Stats'});
 
