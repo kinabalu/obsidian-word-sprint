@@ -11,6 +11,7 @@ export interface WordSprintSettings {
 	nanowrimoAuthToken: string;
 	nanowrimoUserId: number;
 	nanowrimoProjectId: number;
+	nanowrimoProjectChallengeId: number;
 	nanowrimoProjectName: number;
 }
 

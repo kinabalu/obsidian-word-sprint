@@ -19,6 +19,7 @@ import SprintRun from "./SprintRun";
 import StatView, {STAT_VIEW_TYPE} from "./StatView";
 import {ICON_NAME, STATS_FILENAME} from "./constants";
 import ChangeSprintTimeModal from "./ChangeSprintTimeModal";
+import NanowrimoApi from "./nanowrimo-api";
 
 const DEFAULT_SETTINGS: WordSprintSettings = {
 	sprintLength: 25,
@@ -81,6 +82,10 @@ export default class WordSprintPlugin extends Plugin {
 		const adapter = this.app.vault.adapter;
 		const dir = this.manifest.dir;
 		const path = normalizePath(`${dir}/${statsFilename}`)
+
+		if (this.settings.nanowrimoProjectId) {
+			await this.updateNano(this.theSprint.getStats().totalWordsWritten)
+		}
 
 		try {
 			await adapter.write(path, JSON.stringify(this.sprintHistory))
@@ -249,14 +254,15 @@ export default class WordSprintPlugin extends Plugin {
 		this.addCommand({
 			id: 'stop-word-sprint',
 			name: 'Stop Word Sprint',
-			callback: () => {
+			callback: async () => {
 				if (this.theSprint && this.theSprint.isStarted()) {
 					this.statusBarItemEl.setText('')
 					const sprintRunStat : SprintRunStat = this.theSprint.stopSprint()
 					this.showEndOfSprintStatsModal()
 
 					this.sprintHistory.push(this.theSprint.getStats())
-					this.saveStats()
+					await this.saveStats()
+
 					this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 
 					new Notice(`Word Sprint Cancelled! Total words written: ${sprintRunStat.totalWordsWritten}`)
@@ -268,6 +274,29 @@ export default class WordSprintPlugin extends Plugin {
 		this.addSettingTab(new WordSprintSettingsTab(this.app, this));
 	}
 
+	async updateNano(count : number) {
+		const nanowrimoApi = new NanowrimoApi(this.settings.nanowrimoAuthToken)
+
+		const projectChallenges = await nanowrimoApi.getProjectChallenges(`${this.settings.nanowrimoProjectId}`)
+		console.dir(projectChallenges)
+
+		const projects = await nanowrimoApi.getProjects(`${this.settings.nanowrimoUserId}`)
+
+		const filteredProject = projects.data.filter((project : any) => Number(project.id) === this.settings.nanowrimoProjectId)
+
+		console.dir(filteredProject)
+		if(filteredProject.length !== 1) {
+			return new Notice('Could not find the project id in list on NaNo')
+		}
+
+		const selectedProject = filteredProject[0]
+
+		console.dir(selectedProject)
+
+		const projectSession = await nanowrimoApi.updateProject(`${this.settings.nanowrimoProjectId}`, `${this.settings.nanowrimoProjectChallengeId}`, count)
+
+		console.dir(projectSession)
+	}
 
 	startSprintCommand() {
 		if (this.theSprint && this.theSprint.isStarted()) {
@@ -312,6 +341,7 @@ export default class WordSprintPlugin extends Plugin {
 		},(sprintRunStat : SprintRunStat) => {
 			this.sprintHistory.push(this.theSprint.getStats())
 			this.saveStats()
+
 			this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 
 			window.clearInterval(this.sprintInterval)
