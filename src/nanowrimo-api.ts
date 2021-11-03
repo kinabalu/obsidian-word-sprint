@@ -20,6 +20,18 @@ export default class NanowrimoApi {
 		return JSON.parse(data)['auth_token']
 	}
 
+	async getCurrentUser(): Promise<any> {
+		const currentUserData = await request({
+			method: 'GET',
+			url: `${NANOWRIMO_API_URL}/users/current`,
+			headers: {
+				"Content-Type": "application/json",
+				"Authorization": this.token,
+			},
+		})
+		return JSON.parse(currentUserData)
+	}
+
 	async getUser(username : string): Promise<any> {
 		const userData = await request({
 			method: 'GET',

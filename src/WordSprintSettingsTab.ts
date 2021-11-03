@@ -191,6 +191,16 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 					})
 				)
 
+		} else if (this.plugin.settings.nanowrimoAuthToken && !this.plugin.settings.nanowrimoUserId) {
+			(async() => {
+				const nanowrimoApi = new NanowrimoApi(this.plugin.settings.nanowrimoAuthToken)
+				const userData = await nanowrimoApi.getCurrentUser()
+				if(userData) {
+					this.plugin.settings.nanowrimoUserId = Number(userData.data.id)
+					await this.plugin.saveSettings()
+					this.display()
+				}
+			})()
 		} else {
 			new Setting(containerEl)
 				.setName('Username')
