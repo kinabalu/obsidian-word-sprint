@@ -174,9 +174,7 @@ export default class SprintRun {
 				this.sprintComplete = true
 				this.updateNotWriting(currentNow)
 				window.clearInterval(this.sprintInterval)
-
-				// DEBUG
-				// console.log(this.wordsPerMinute)
+\
 				endOfSprintCallback(this.getStats())
 			}
 		}, 1000)

@@ -154,6 +154,26 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 				})
 
 			new Setting(containerEl)
+				.setName('Project Challenge')
+				.setDesc('Choose the project challenge you would like to update word count for')
+				.addDropdown(async (dropdown) => {
+					const nanowrimoApi = new NanowrimoApi(this.plugin.settings.nanowrimoAuthToken)
+					const projectChallengesResponse = await nanowrimoApi.getProjectChallenges(`${this.plugin.settings.nanowrimoProjectId}`)
+
+					const options = projectChallengesResponse.data.reduce((existing : any, projectChallenge : any,) : any => {
+						return {...existing, [projectChallenge.id]: projectChallenge.attributes.name}
+					}, {0: 'Select A Project'})
+
+					dropdown.addOptions(options)
+					dropdown.setValue(`${this.plugin.settings.nanowrimoProjectChallengeId}`)
+					dropdown.onChange(async (value) => {
+						this.plugin.settings.nanowrimoProjectChallengeId = Number(value)
+
+						await this.plugin.saveSettings();
+					})
+				})
+
+			new Setting(containerEl)
 				.addButton(button => button
 					.setButtonText("Logout")
 					.onClick(async () => {

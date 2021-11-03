@@ -83,7 +83,7 @@ export default class WordSprintPlugin extends Plugin {
 		const dir = this.manifest.dir;
 		const path = normalizePath(`${dir}/${statsFilename}`)
 
-		if (this.settings.nanowrimoProjectId) {
+		if (this.settings.nanowrimoProjectId && this.settings.nanowrimoProjectChallengeId) {
 			await this.updateNano(this.theSprint.getStats().totalWordsWritten)
 		}
 
@@ -275,27 +275,17 @@ export default class WordSprintPlugin extends Plugin {
 	}
 
 	async updateNano(count : number) {
-		const nanowrimoApi = new NanowrimoApi(this.settings.nanowrimoAuthToken)
+		try {
+			const nanowrimoApi = new NanowrimoApi(this.settings.nanowrimoAuthToken)
+			const projectSession = await nanowrimoApi.updateProject(`${this.settings.nanowrimoProjectId}`, `${this.settings.nanowrimoProjectChallengeId}`, count)
 
-		const projectChallenges = await nanowrimoApi.getProjectChallenges(`${this.settings.nanowrimoProjectId}`)
-		console.dir(projectChallenges)
-
-		const projects = await nanowrimoApi.getProjects(`${this.settings.nanowrimoUserId}`)
-
-		const filteredProject = projects.data.filter((project : any) => Number(project.id) === this.settings.nanowrimoProjectId)
-
-		console.dir(filteredProject)
-		if(filteredProject.length !== 1) {
-			return new Notice('Could not find the project id in list on NaNo')
+			if (projectSession) {
+				new Notice(`Updated NaNoWriMo project with latest sprint count: ${count}`)
+			}
+		} catch(error) {
+			console.error(error)
+			new Notice('Error occurred updating NaNoWriMo project with sprint count')
 		}
-
-		const selectedProject = filteredProject[0]
-
-		console.dir(selectedProject)
-
-		const projectSession = await nanowrimoApi.updateProject(`${this.settings.nanowrimoProjectId}`, `${this.settings.nanowrimoProjectChallengeId}`, count)
-
-		console.dir(projectSession)
 	}
 
 	startSprintCommand() {

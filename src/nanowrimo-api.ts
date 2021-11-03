@@ -92,7 +92,6 @@ export default class NanowrimoApi {
 			}
 		}
 
-		console.log(JSON.stringify(data))
 		const result = await request({
 			method: 'POST',
 			url: `${NANOWRIMO_API_URL}/project-sessions`,
