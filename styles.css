@@ -59,7 +59,6 @@
 }
 
 #wordsprint #sprintActionPanel .sprintStop {
-    opacity: 1;
 	margin: 0.5rem;
 	background-color: var(--background-modifier-error);
     color: var(--text-on-accent);
@@ -98,6 +97,10 @@
 #wordsprint #sprintViewStats .viewStats {
 	background-color: var(--text-faint);
 	color: var(--text-on-accent);
+}
+
+.setting-item-control button:disabled {
+	opacity: .4;
 }
 
 /* Goals */
