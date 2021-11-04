@@ -56,9 +56,16 @@ If you have a regular account you've signed up with through [nanowrimo.org](http
 login using the plugin settings, select a project and the challenge to enable auto-updating progress in nanowrimo
 from the sprinting tool.
 
-For those who have logged in using Google or Facebook it's a little more challenging. If you have mild technical chops
-you can extract the Authorization token using Inspect from your browser and looking at one of the XMLHttpRequest calls.
-If there are better methods of doing that I'd love to hear them!
+For those of you logged in with Google or Facebook it's a little more challenging. My suggestion is to install a plugin
+named [Live HTTP Headers](https://chrome.google.com/webstore/detail/live-http-headers/ianhploojoffmpcpilhgpacbeaifanid).
+
+After installing this, you can activate it, hit Settings and turn off everything in Capture but `XMLHttpRequests` and 
+I always like choosing Formatted View headers. 
+
+After running this and ensuring Capture is turned on. Open up NaNoWriMo in a new browser tab and make
+sure you're logged in and viewing a project. Find one of the requests near the top that starts with
+`https://api.nanowrimo.org...` and select it. You should see on the right a Request Header named "Authorization".
+Copy that to your clipboard.
 
 Once you have your Authorization key, close Obsidian, open `data.json` inside of the plugin directory
 `<uour vault>/.obsidian/plugins/obsidian-word-sprint` and add a key `nanowrimoAuthToken` with the
