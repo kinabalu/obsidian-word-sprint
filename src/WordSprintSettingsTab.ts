@@ -43,6 +43,16 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 				}))
 
 		new Setting(containerEl)
+			.setName('Status update in leaf when not writing')
+			.setDesc('default is on, provide status updates in leaf when you are not writing')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showLeafUpdates)
+				.onChange(async (value: boolean) => {
+					this.plugin.settings.showLeafUpdates = value
+					await this.plugin.saveSettings()
+				}))
+
+		new Setting(containerEl)
 			.setName('First notice when not writing')
 			.setDesc(`(after ${this.plugin.settings.yellowNoticeTimeout} seconds)`)
 			.addText(text => text

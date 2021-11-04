@@ -59,7 +59,7 @@ export const StatReactView = () => {
 	const [sprintLength, setSprintLength] = React.useState(plugin.theSprint.sprintLength)
 
 	const renderStatusName = (status : string) => {
-		if (!plugin.settings.showLagNotices) {
+		if (!plugin.settings.showLeafUpdates) {
 			return 'No Notices'
 		}
 		switch(status) {
@@ -75,7 +75,7 @@ export const StatReactView = () => {
 	}
 
 	const renderStatusClass = (status : string) => {
-		if (!plugin.settings.showLagNotices) {
+		if (!plugin.settings.showLeafUpdates) {
 			return 'pending'
 		}
 

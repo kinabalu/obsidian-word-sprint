@@ -1,6 +1,7 @@
 export interface WordSprintSettings {
 	sprintLength: number;
 	showLagNotices: boolean;
+	showLeafUpdates: boolean;
 	yellowNoticeTimeout: number;
 	yellowNoticeText : string;
 	redNoticeTimeout: number;

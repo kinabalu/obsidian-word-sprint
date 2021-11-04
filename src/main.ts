@@ -24,6 +24,7 @@ import NanowrimoApi from "./nanowrimo-api";
 const DEFAULT_SETTINGS: WordSprintSettings = {
 	sprintLength: 25,
 	showLagNotices: true,
+	showLeafUpdates: true,
 	yellowNoticeTimeout: 10,
 	yellowNoticeText: "Keep on writing, this is a sprint!",
 	redNoticeTimeout: 50,
