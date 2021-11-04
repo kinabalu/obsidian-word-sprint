@@ -5,16 +5,31 @@ import {SprintRunStat} from "./types";
 
 export default class EndOfSprintStatsModal extends Modal {
 	sprintRunStat : SprintRunStat
+	sprintHistory : SprintRunStat[]
+	statIndex : number;
 
-	constructor(app: App, sprintRunStat : SprintRunStat) {
-		super(app);
-		this.sprintRunStat = sprintRunStat
+	constructor(app: App, sprintRunStat : SprintRunStat);
+	constructor(app: App, sprintHistory : SprintRunStat[], statIndex : number);
+	constructor(...params: any[]) {
+		super(params[0]);
+
+		if (params.length === 2) {
+			this.sprintRunStat = params[1]
+			return
+		}
+
+		if (params.length === 3) {
+			this.sprintHistory = params[1]
+			this.statIndex = params[2]
+
+			this.sprintRunStat = this.sprintHistory[this.statIndex]
+			return
+		}
 	}
 
-	onOpen() {
-		let {contentEl} = this;
-
-		contentEl.createEl('h2', {text: 'Word Sprint Stats'})
+	renderStats(contentEl : HTMLElement) {
+		let header = this.sprintHistory ? `Word Sprint Stats (${this.statIndex + 1} of ${this.sprintHistory.length})` : 'Word Sprint Stats'
+		contentEl.createEl('h2', {text: header})
 
 		let sprintLengthText : string = ''
 		if ((this.sprintRunStat.sprintLength * 60) > this.sprintRunStat.elapsedSprintLength) {
@@ -60,11 +75,44 @@ export default class EndOfSprintStatsModal extends Modal {
 				text.setDisabled(true)
 			})
 		new Setting(contentEl)
-		 	.setName("Total Time Not Writing")
-		 	.addText((text) => {
-		 		text.setValue(`${secondsToHumanize(this.sprintRunStat.totalTimeNotWriting)}`)
-		 		text.setDisabled(true)
-		 	})
+			.setName("Total Time Not Writing")
+			.addText((text) => {
+				text.setValue(`${secondsToHumanize(this.sprintRunStat.totalTimeNotWriting)}`)
+				text.setDisabled(true)
+			})
+
+		if (this.sprintHistory && this.sprintHistory.length > 1) {
+			new Setting(contentEl)
+				.addButton(button => button
+					.setButtonText("Previous")
+					.setDisabled(this.statIndex === 0)
+					.onClick(async () => {
+						this.statIndex -= 1
+						this.sprintRunStat = this.sprintHistory[this.statIndex]
+
+						contentEl.empty()
+						this.renderStats(contentEl)
+					})
+				)
+				.addButton(button => button
+					.setButtonText("Next")
+					.setDisabled(this.statIndex >= this.sprintHistory.length - 1)
+					.onClick(async () => {
+						this.statIndex += 1
+						this.sprintRunStat = this.sprintHistory[this.statIndex]
+
+						contentEl.empty()
+						this.renderStats(contentEl)
+					})
+				)
+		}
+	}
+
+	onOpen() {
+		let {contentEl} = this;
+		contentEl.empty()
+
+		this.renderStats(contentEl)
 	}
 
 	onClose() {

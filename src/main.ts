@@ -356,7 +356,7 @@ export default class WordSprintPlugin extends Plugin {
 		if (this.theSprint.isStarted()) {
 			new EndOfSprintStatsModal(this.app, this.theSprint.getStats()).open()
 		} else if (this.sprintHistory.length > 0) {
-			new EndOfSprintStatsModal(this.app, this.sprintHistory[this.sprintHistory.length - 1]).open()
+			new EndOfSprintStatsModal(this.app, this.sprintHistory, this.sprintHistory.length - 1).open()
 		} else {
 			new Notice("No stats found to show!")
 		}

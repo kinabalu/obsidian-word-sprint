@@ -18,8 +18,8 @@ export const StatReactView = () => {
 		}, 0))
 		setWordCount(miniStats.wordCount)
 
-		setDailyGoal(plugin.settings.dailyGoal - dailyWordCount)
-		setOverallGoal(plugin.settings.overallGoal - plugin.sprintHistory.reduce((total: number, amount: SprintRunStat,) => {
+		setDailyGoal(plugin.settings.dailyGoal - dailyWordCount - miniStats.wordCount)
+		setOverallGoal(plugin.settings.overallGoal - miniStats.wordCount - plugin.sprintHistory.reduce((total: number, amount: SprintRunStat,) => {
 			return total + amount.totalWordsWritten
 		}, 0))
 
