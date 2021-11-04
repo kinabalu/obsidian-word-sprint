@@ -64,6 +64,10 @@
     color: var(--text-on-accent);
 }
 
+#wordsprint .hand {
+	cursor: pointer;
+}
+
 /* Tabs */
 #wordsprint #sectionTab button {
 	margin: 0;

@@ -1,5 +1,7 @@
-import {App, PluginSettingTab, Setting} from "obsidian";
+import {App, PluginSettingTab, Setting, request} from "obsidian";
 import WordSprintPlugin from "./main";
+import {SprintRunStat} from "./types";
+import NanowrimoApi from "./nanowrimo-api";
 
 export default class WordSprintSettingsTab extends PluginSettingTab {
 	plugin: WordSprintPlugin;
@@ -25,6 +27,7 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 				text.setValue(`${this.plugin.settings.sprintLength}`)
 					.onChange(async (value) => {
 						this.plugin.settings.sprintLength = Number(value)
+						this.plugin.theSprint.updateSprintLength(Number(value))
 						await this.plugin.saveSettings();
 					})
 			})
@@ -36,6 +39,16 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.showLagNotices)
 				.onChange(async (value: boolean) => {
 					this.plugin.settings.showLagNotices = value
+					await this.plugin.saveSettings()
+				}))
+
+		new Setting(containerEl)
+			.setName('Status update in leaf when not writing')
+			.setDesc('default is on, provide status updates in leaf when you are not writing')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showLeafUpdates)
+				.onChange(async (value: boolean) => {
+					this.plugin.settings.showLeafUpdates = value
 					await this.plugin.saveSettings()
 				}))
 
@@ -124,6 +137,117 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 				text.inputEl.type = 'number'
 			})
 
+		let nanoUsername : string, nanoPassword : string = null
+
+		containerEl.createEl('h2', {text: 'NanoWriMo'});
+
+		if (this.plugin.settings.nanowrimoAuthToken && this.plugin.settings.nanowrimoUserId) {
+			new Setting(containerEl)
+				.setName('Project')
+				.setDesc('Choose which project you would like to update word count for')
+				.addDropdown(async (dropdown) => {
+					const nanowrimoApi = new NanowrimoApi(this.plugin.settings.nanowrimoAuthToken)
+					const projectsResponse = await nanowrimoApi.getProjects(`${this.plugin.settings.nanowrimoUserId}`)
+
+					const options = projectsResponse.data.reduce((existing : any, project : any,) : any => {
+						return {...existing, [project.id]: project.attributes.title}
+					}, {0: 'Select A Project'})
+
+					dropdown.addOptions(options)
+					dropdown.setValue(`${this.plugin.settings.nanowrimoProjectId}`)
+					dropdown.onChange(async (value) => {
+						this.plugin.settings.nanowrimoProjectId = Number(value)
+						this.plugin.settings.nanowrimoProjectName = options[value]
+
+						await this.plugin.saveSettings();
+						this.display()
+					})
+				})
+
+			if (this.plugin.settings.nanowrimoProjectId) {
+				new Setting(containerEl)
+					.setName('Project Challenge')
+					.setDesc('Choose the project challenge you would like to update word count for')
+					.addDropdown(async (dropdown) => {
+						const nanowrimoApi = new NanowrimoApi(this.plugin.settings.nanowrimoAuthToken)
+						const projectChallengesResponse = await nanowrimoApi.getProjectChallenges(`${this.plugin.settings.nanowrimoProjectId}`)
+
+						const options = projectChallengesResponse.data.reduce((existing: any, projectChallenge: any,): any => {
+							return {...existing, [projectChallenge.id]: projectChallenge.attributes.name}
+						}, {0: 'Select A Project'})
+
+						dropdown.addOptions(options)
+						dropdown.setValue(`${this.plugin.settings.nanowrimoProjectChallengeId}`)
+						dropdown.onChange(async (value) => {
+							this.plugin.settings.nanowrimoProjectChallengeId = Number(value)
+
+							await this.plugin.saveSettings();
+							this.display()
+						})
+					})
+			}
+
+			new Setting(containerEl)
+				.addButton(button => button
+					.setButtonText("Logout")
+					.onClick(async () => {
+						delete this.plugin.settings.nanowrimoAuthToken
+						delete this.plugin.settings.nanowrimoProjectId
+						delete this.plugin.settings.nanowrimoProjectName
+						delete this.plugin.settings.nanowrimoUserId
+
+						await this.plugin.saveSettings();
+						this.display()
+					})
+				)
+
+		} else if (this.plugin.settings.nanowrimoAuthToken && !this.plugin.settings.nanowrimoUserId) {
+			(async() => {
+				const nanowrimoApi = new NanowrimoApi(this.plugin.settings.nanowrimoAuthToken)
+				const userData = await nanowrimoApi.getCurrentUser()
+				if(userData) {
+					this.plugin.settings.nanowrimoUserId = Number(userData.data.id)
+					await this.plugin.saveSettings()
+					this.display()
+				}
+			})()
+		} else {
+			new Setting(containerEl)
+				.setName('Username')
+				.addText((text) => {
+					text.setPlaceholder('username')
+					text.onChange(async (value) => {
+						nanoUsername = value
+					})
+				})
+
+			new Setting(containerEl)
+				.setName('Password')
+				.addText((text) => {
+					text.setPlaceholder('password')
+					text.inputEl.type = 'password'
+					text.onChange(async (value) => {
+						nanoPassword = value
+					})
+				})
+
+
+			new Setting(containerEl)
+				.addButton(button => button
+					.setButtonText("Login")
+					.onClick(async () => {
+						const authToken = await NanowrimoApi.login(nanoUsername, nanoPassword)
+						this.plugin.settings.nanowrimoAuthToken = authToken
+
+						const nanowrimoApi = new NanowrimoApi(authToken)
+						const userResponse = await nanowrimoApi.getUser(nanoUsername)
+
+						this.plugin.settings.nanowrimoUserId = userResponse.data.id
+						await this.plugin.saveSettings();
+						this.display()
+					})
+				)
+		}
 
 		containerEl.createEl('h2', {text: 'Stats'});
 

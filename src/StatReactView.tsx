@@ -9,6 +9,7 @@ export const StatReactView = () => {
 	const plugin = usePlugin()
 
 	useInterval(() => {
+		setSprintLength(plugin.theSprint.sprintLength)
 		const miniStats = plugin.theSprint.getMiniStats()
 		setStatsAvailable(plugin.theSprint.getStats() !== null)
 
@@ -17,8 +18,8 @@ export const StatReactView = () => {
 		}, 0))
 		setWordCount(miniStats.wordCount)
 
-		setDailyGoal(plugin.settings.dailyGoal - dailyWordCount)
-		setOverallGoal(plugin.settings.overallGoal - plugin.sprintHistory.reduce((total: number, amount: SprintRunStat,) => {
+		setDailyGoal(plugin.settings.dailyGoal - dailyWordCount - miniStats.wordCount)
+		setOverallGoal(plugin.settings.overallGoal - miniStats.wordCount - plugin.sprintHistory.reduce((total: number, amount: SprintRunStat,) => {
 			return total + amount.totalWordsWritten
 		}, 0))
 
@@ -28,6 +29,9 @@ export const StatReactView = () => {
 			setIsSprintStarted(plugin.theSprint.isStarted())
 			setStatus(plugin.theSprint.status)
 		} else {
+			if (plugin.theSprint) {
+				setSecondsLeft(miniStats.secondsLeft)
+			}
 			setIsSprintStarted(false)
 		}
 
@@ -52,8 +56,10 @@ export const StatReactView = () => {
 	const [dailyGoal, setDailyGoal] = React.useState(null)
 	const [overallGoal, setOverallGoal] = React.useState(null)
 
+	const [sprintLength, setSprintLength] = React.useState(plugin.theSprint.sprintLength)
+
 	const renderStatusName = (status : string) => {
-		if (!plugin.settings.showLagNotices) {
+		if (!plugin.settings.showLeafUpdates) {
 			return 'No Notices'
 		}
 		switch(status) {
@@ -69,7 +75,7 @@ export const StatReactView = () => {
 	}
 
 	const renderStatusClass = (status : string) => {
-		if (!plugin.settings.showLagNotices) {
+		if (!plugin.settings.showLeafUpdates) {
 			return 'pending'
 		}
 
@@ -106,7 +112,7 @@ export const StatReactView = () => {
 			{ !isSprintStarted && (
 				<>
 					<div className={`status ${renderStatusClass(status)}`}>{renderStatusName(status)}</div>
-					<div className="secondsLeft">{secondsToMMSS(plugin.theSprint.sprintLength * 60)}</div>
+					<div className="hand secondsLeft" onClick={() => { plugin.showChangeSprintTimeModal() }}>{secondsToMMSS(sprintLength * 60)}</div>
 				</>
 			)}
 			<div id="sprintActionPanel">

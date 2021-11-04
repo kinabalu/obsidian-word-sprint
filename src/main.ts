@@ -18,10 +18,13 @@ import {getWordCount, secondsToHumanize} from './utils'
 import SprintRun from "./SprintRun";
 import StatView, {STAT_VIEW_TYPE} from "./StatView";
 import {ICON_NAME, STATS_FILENAME} from "./constants";
+import ChangeSprintTimeModal from "./ChangeSprintTimeModal";
+import NanowrimoApi from "./nanowrimo-api";
 
 const DEFAULT_SETTINGS: WordSprintSettings = {
 	sprintLength: 25,
 	showLagNotices: true,
+	showLeafUpdates: true,
 	yellowNoticeTimeout: 10,
 	yellowNoticeText: "Keep on writing, this is a sprint!",
 	redNoticeTimeout: 50,
@@ -81,6 +84,10 @@ export default class WordSprintPlugin extends Plugin {
 		const dir = this.manifest.dir;
 		const path = normalizePath(`${dir}/${statsFilename}`)
 
+		if (this.settings.nanowrimoProjectId && this.settings.nanowrimoProjectChallengeId) {
+			await this.updateNano(this.theSprint.getStats().totalWordsWritten)
+		}
+
 		try {
 			await adapter.write(path, JSON.stringify(this.sprintHistory))
 		} catch(error) {
@@ -109,6 +116,14 @@ export default class WordSprintPlugin extends Plugin {
 		)
 
 		this.addCommand({
+			id: 'show-word-sprint-leaf',
+			name: 'Show Word Sprint Leaf',
+			callback: () => {
+				this.activateView()
+			}
+		})
+
+		this.addCommand({
 			id: 'insert-last-word-sprint-stats',
 			name: 'Insert Last Word Sprint Stats',
 			editorCallback: async (editor: Editor) => {
@@ -118,12 +133,13 @@ export default class WordSprintPlugin extends Plugin {
 					new Notice("Sprint still going, but here's the stats as of this moment")
 				}
 
-				const stats = this.theSprint.getStats()
+				const stats = this.sprintHistory[this.sprintHistory.length - 1]
 
+				statsText = `### Latest Word Sprint ${moment(stats.created).format('YYYY-MM-DD HH:mm:ss')}\n`
 				if ((stats.sprintLength * 60) > stats.elapsedSprintLength) {
-					statsText = `Sprint Length: ${secondsToHumanize(stats.elapsedSprintLength)} of ${secondsToHumanize(stats.sprintLength * 60)}\n`
+					statsText += `Sprint Length: ${secondsToHumanize(stats.elapsedSprintLength)} of ${secondsToHumanize(stats.sprintLength * 60)}\n`
 				} else {
-					statsText = `Sprint Length: ${secondsToHumanize(stats.sprintLength * 60)}\n`
+					statsText += `Sprint Length: ${secondsToHumanize(stats.sprintLength * 60)}\n`
 				}
 				statsText += `Total Words Written: ${stats.totalWordsWritten}\n`
 				statsText += `Average Words Per Minute: ${numeral(stats.averageWordsPerMinute).format('0.0')}\n`
@@ -131,6 +147,9 @@ export default class WordSprintPlugin extends Plugin {
 				statsText += `Red Notices: ${stats.redNotices}\n`
 				statsText += `Longest Stretch Not Writing: ${secondsToHumanize(stats.longestStretchNotWriting)}\n`
 				statsText += `Total Time Not Writing: ${secondsToHumanize(stats.totalTimeNotWriting)}\n`
+				statsText += `Total Words Added: ${stats.wordsAdded}\n`
+				statsText += `Total Words Deleted: ${stats.wordsDeleted}\n`
+				statsText += `Total Net Words: ${stats.wordsNet}\n`
 
 				editor.replaceSelection(statsText)
 			}
@@ -146,39 +165,72 @@ export default class WordSprintPlugin extends Plugin {
 				}
 
 				statsText = '### Average Word Sprint Stats\n'
-				statsText += `Total Sprints: ${this.sprintHistory.length}\n`
-				statsText += `Words Written: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const totalSprints = this.sprintHistory.length
+				statsText += `Total Sprints: ${totalSprints}\n`
+				const wordsWritten = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.totalWordsWritten
-					return total / array.length
-				}, 0)}\n`
+					return total
+				}, 0)
+				statsText += `Total Words Written: ${numeral(wordsWritten).format('0.00')}\n`
+				const totalSprintTime = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.elapsedSprintLength
+					return total
+				}, 0)
+				statsText += `Total Sprinting Time: ${secondsToHumanize(totalSprintTime)}\n`
 
-				statsText += `Average Words per Minute: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const averageSprintLength = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.elapsedSprintLength
+					return total
+				}, 0) / totalSprints
+				statsText += `Average Sprint Length: ${secondsToHumanize(averageSprintLength)}\n`
+
+				const averageWPM = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.averageWordsPerMinute
-					return total / array.length
-				}, 0)}\n`
+					return total
+				}, 0) / totalSprints
+				statsText += `Average Words per Minute: ${numeral(averageWPM).format('0.00')}\n`
 
-				statsText += `Red Notices: ${this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const redNotices = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.redNotices
-					return total / array.length
-				}, 0)}\n`
+					return total
+				}, 0)  / totalSprints
+				statsText += `Average Red Notices: ${numeral(redNotices).format('0.00')}\n`
 
 				const yellowNotices = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.yellowNotices
-					return total / array.length
-				}, 0)
-				statsText += `Yellow Notices: ${yellowNotices}\n`
+					return total
+				}, 0) / totalSprints
+				statsText += `Average Yellow Notices: ${numeral(yellowNotices).format('0.00')}\n`
 
 				const averageLongestStretchNotWriting = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.longestStretchNotWriting
-					return total / array.length
-				}, 0)
-				statsText += `Longest Stretches Not Writing: ${secondsToHumanize(averageLongestStretchNotWriting)}\n`
+					return total
+				}, 0) / totalSprints
+				statsText += `Average Longest Stretches Not Writing: ${secondsToHumanize(averageLongestStretchNotWriting)}\n`
 
 				const averageTimeNotWriting = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.totalTimeNotWriting
-					return total / array.length
-				}, 0)
-				statsText += `Time Not Writing: ${secondsToHumanize(averageTimeNotWriting)}\n`
+					return total
+				}, 0) / totalSprints
+				statsText += `Average Time Not Writing: ${secondsToHumanize(averageTimeNotWriting)}\n`
+
+				const wordsAdded = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.wordsAdded
+					return total
+				}, 0) / totalSprints
+				statsText += `Average Words Added: ${numeral(wordsAdded).format('0.00')}\n`
+
+				const wordsDeleted = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.wordsDeleted
+					return total
+				}, 0) / totalSprints
+				statsText += `Average Words Deleted: ${numeral(wordsDeleted).format('0.00')}\n`
+
+				const netWords = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.wordsNet
+					return total
+				}, 0) / totalSprints
+				statsText += `Average Net Words: ${numeral(netWords).format('0.00')}\n`
 
 				editor.replaceSelection(statsText)
 			}
@@ -193,16 +245,25 @@ export default class WordSprintPlugin extends Plugin {
 		})
 
 		this.addCommand({
+			id: 'change-word-sprint-length',
+			name: 'Change Word Sprint Length',
+			callback: () => {
+				this.showChangeSprintTimeModal()
+			}
+		})
+
+		this.addCommand({
 			id: 'stop-word-sprint',
 			name: 'Stop Word Sprint',
-			callback: () => {
+			callback: async () => {
 				if (this.theSprint && this.theSprint.isStarted()) {
 					this.statusBarItemEl.setText('')
 					const sprintRunStat : SprintRunStat = this.theSprint.stopSprint()
 					this.showEndOfSprintStatsModal()
 
 					this.sprintHistory.push(this.theSprint.getStats())
-					this.saveStats()
+					await this.saveStats()
+
 					this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 
 					new Notice(`Word Sprint Cancelled! Total words written: ${sprintRunStat.totalWordsWritten}`)
@@ -214,6 +275,19 @@ export default class WordSprintPlugin extends Plugin {
 		this.addSettingTab(new WordSprintSettingsTab(this.app, this));
 	}
 
+	async updateNano(count : number) {
+		try {
+			const nanowrimoApi = new NanowrimoApi(this.settings.nanowrimoAuthToken)
+			const projectSession = await nanowrimoApi.updateProject(`${this.settings.nanowrimoProjectId}`, `${this.settings.nanowrimoProjectChallengeId}`, count)
+
+			if (projectSession) {
+				new Notice(`Updated NaNoWriMo project with latest sprint count: ${count}`)
+			}
+		} catch(error) {
+			console.error(error)
+			new Notice('Error occurred updating NaNoWriMo project with sprint count')
+		}
+	}
 
 	startSprintCommand() {
 		if (this.theSprint && this.theSprint.isStarted()) {
@@ -258,6 +332,7 @@ export default class WordSprintPlugin extends Plugin {
 		},(sprintRunStat : SprintRunStat) => {
 			this.sprintHistory.push(this.theSprint.getStats())
 			this.saveStats()
+
 			this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 
 			window.clearInterval(this.sprintInterval)
@@ -269,11 +344,19 @@ export default class WordSprintPlugin extends Plugin {
 		this.registerInterval(sprintInterval);
 	}
 
+	showChangeSprintTimeModal() {
+		if (this.theSprint.isStarted()) {
+			new Notice("Cannot change sprint time during a sprint!")
+		} else {
+			new ChangeSprintTimeModal(this.app, this).open()
+		}
+	}
+
 	showEndOfSprintStatsModal() {
 		if (this.theSprint.isStarted()) {
 			new EndOfSprintStatsModal(this.app, this.theSprint.getStats()).open()
 		} else if (this.sprintHistory.length > 0) {
-			new EndOfSprintStatsModal(this.app, this.sprintHistory[0]).open()
+			new EndOfSprintStatsModal(this.app, this.sprintHistory, this.sprintHistory.length - 1).open()
 		} else {
 			new Notice("No stats found to show!")
 		}

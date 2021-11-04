@@ -1,6 +1,7 @@
 export interface WordSprintSettings {
 	sprintLength: number;
 	showLagNotices: boolean;
+	showLeafUpdates: boolean;
 	yellowNoticeTimeout: number;
 	yellowNoticeText : string;
 	redNoticeTimeout: number;
@@ -8,6 +9,11 @@ export interface WordSprintSettings {
 	dailyGoal: number;
 	overallGoal: number;
 	defaultTab: string;
+	nanowrimoAuthToken: string;
+	nanowrimoUserId: number;
+	nanowrimoProjectId: number;
+	nanowrimoProjectChallengeId: number;
+	nanowrimoProjectName: number;
 }
 
 export interface SprintRunStat {
@@ -23,4 +29,7 @@ export interface SprintRunStat {
 	longestStretchNotWriting: number;
 	totalTimeNotWriting: number;
 	elapsedMilliseconds: number;
+	wordsAdded: number,
+	wordsDeleted: number,
+	wordsNet: number,
 }
