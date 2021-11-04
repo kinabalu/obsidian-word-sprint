@@ -38,13 +38,14 @@ export default class EndOfSprintStatsModal extends Modal {
 			sprintLengthText = `${secondsToHumanize(this.sprintRunStat.sprintLength * 60)}\n`
 		}
 
-		new Setting(contentEl)
-			.setName("Sprint Date")
-			.addText((text) => {
-				text.setValue(moment(this.sprintRunStat.created).format('YYYY-MM-DD HH:mm:ss'))
-				text.setDisabled(true)
-			})
-
+		if (this.sprintHistory && this.sprintHistory.length > 1) {
+			new Setting(contentEl)
+				.setName("Sprint Date")
+				.addText((text) => {
+					text.setValue(moment(this.sprintRunStat.created).format('YYYY-MM-DD HH:mm:ss'))
+					text.setDisabled(true)
+				})
+		}
 		new Setting(contentEl)
 			.setName("Sprint Length")
 			.addText((text) => {
