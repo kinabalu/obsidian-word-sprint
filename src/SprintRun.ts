@@ -22,7 +22,7 @@ export default class SprintRun {
 	wordsDeleted: number = 0
 
 	lastWordTime : number = 0
-	previousWordCount : number
+	previousWordCount : number = 0
 	wordCount : number = 0
 
 	yellowNoticeCount : number = 0
