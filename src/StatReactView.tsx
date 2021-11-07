@@ -93,7 +93,7 @@ export const StatReactView = () => {
 
 	const stopSprint = () => {
 		setStatus(null)
-		plugin.theSprint.stopSprint()
+		plugin.theSprint.stop()
 	}
 
 	const startSprint = () => {

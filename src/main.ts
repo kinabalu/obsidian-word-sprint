@@ -258,7 +258,7 @@ export default class WordSprintPlugin extends Plugin {
 			callback: async () => {
 				if (this.theSprint && this.theSprint.isStarted()) {
 					this.statusBarItemEl.setText('')
-					const sprintRunStat : SprintRunStat = this.theSprint.stopSprint()
+					const sprintRunStat : SprintRunStat = this.theSprint.stop()
 					this.showEndOfSprintStatsModal()
 
 					this.sprintHistory.push(this.theSprint.getStats())
@@ -314,7 +314,7 @@ export default class WordSprintPlugin extends Plugin {
 			this.theSprint.typingUpdate(contents, filepath)
 		}, 400, false)
 
-		const sprintInterval = this.theSprint.startSprint(previousWordCount, (status: string, statusChanged : boolean) => {
+		const sprintInterval = this.theSprint.start(previousWordCount, (status: string, statusChanged : boolean) => {
 			const miniStats = this.theSprint.getMiniStats()
 
 			if (statusChanged) {
