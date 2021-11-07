@@ -120,6 +120,11 @@ export const StatReactView = () => {
 				<button className="sprintStop"  disabled={!isSprintStarted} style={{ opacity: isSprintStarted ? 1 : 0.4 }} onClick={() => {stopSprint()}}>Stop</button>
 			</div>
 
+			{plugin.settings.nanowrimoProjectName &&
+				<div id="nanowrimoProject">
+					{plugin.settings.nanowrimoProjectName}
+				</div>
+			}
 			<hr style={{ marginBottom: 0 }} />
 
 			<div id="sectionTab" style={{ margin: 0, width: '100%'}}>
