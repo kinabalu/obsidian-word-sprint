@@ -32,6 +32,9 @@ const DEFAULT_SETTINGS: WordSprintSettings = {
 	dailyGoal: null,
 	overallGoal: null,
 	defaultTab: "stats",
+	showEncouragementNotices: false,
+	encouragementWordCount: 250,
+	encouragementText: "Amazing job so far! Keep it going you're doing great!"
 }
 
 export default class WordSprintPlugin extends Plugin {
@@ -314,9 +317,18 @@ export default class WordSprintPlugin extends Plugin {
 			this.theSprint.typingUpdate(contents, filepath)
 		}, 400, false)
 
+		let encouragementNoticeCount = 0
+
 		const sprintInterval = this.theSprint.start(previousWordCount, (status: string, statusChanged : boolean) => {
 			const miniStats = this.theSprint.getMiniStats()
 
+			if (this.settings.showEncouragementNotices) {
+				const hitCount = Math.floor(miniStats.wordCount / this.settings.encouragementWordCount)
+				if (hitCount > encouragementNoticeCount) {
+					new Notice(this.settings.encouragementText)
+				}
+				encouragementNoticeCount = hitCount
+			}
 			if (statusChanged) {
 				switch(status) {
 					case 'YELLOW':

@@ -9,6 +9,9 @@ export interface WordSprintSettings {
 	dailyGoal: number;
 	overallGoal: number;
 	defaultTab: string;
+	showEncouragementNotices: boolean;
+	encouragementWordCount: number;
+	encouragementText: string;
 	nanowrimoAuthToken: string;
 	nanowrimoUserId: number;
 	nanowrimoProjectId: number;

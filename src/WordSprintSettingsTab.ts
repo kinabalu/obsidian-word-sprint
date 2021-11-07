@@ -249,6 +249,39 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 				)
 		}
 
+		containerEl.createEl('h2', {text: 'Encouragement'});
+
+		new Setting(containerEl)
+			.setName('Turn on encouragement notices for milestones')
+			.setDesc('Default is off, but we think you are doing a great job either way')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showEncouragementNotices)
+				.onChange(async (value: boolean) => {
+					this.plugin.settings.showEncouragementNotices = value
+					await this.plugin.saveSettings()
+				}))
+
+		new Setting(containerEl)
+			.setName('Number of words before receiving encouragement')
+			.addText((text) => {
+				text.setPlaceholder('250')
+				text.setValue(`${this.plugin.settings.encouragementWordCount}`)
+					.onChange(async (value) => {
+						this.plugin.settings.encouragementWordCount = Number(value)
+						await this.plugin.saveSettings();
+					})
+				text.inputEl.type = 'number'
+			})
+		new Setting(containerEl)
+			.setName('Message of encouragement when you hit the above word count')
+			.setDesc(`(each time)`)
+			.addText(text => text
+				.setValue(`${this.plugin.settings.encouragementText}`)
+				.onChange(async (value) => {
+					this.plugin.settings.encouragementText = value
+					await this.plugin.saveSettings();
+				}));
+
 		containerEl.createEl('h2', {text: 'Stats'});
 
 		new Setting(containerEl)
