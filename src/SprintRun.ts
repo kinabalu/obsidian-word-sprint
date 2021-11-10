@@ -1,7 +1,5 @@
 import {getWordCount, secondsToMMSS} from "./utils";
 
-import { moment } from 'obsidian'
-
 import {v4 as uuidv4} from 'uuid'
 import {SprintRunStat} from "./types";
 
@@ -45,6 +43,13 @@ export default class SprintRun {
 	yellowNoticeTimeout : number = 10
 	redNoticeTimeout : number = 50
 
+	/**
+	 * Construct a SprintRun instance
+	 *
+	 * @param sprintLength length of the SprintRun in minutes
+	 * @param yellowNoticeTimeout timeout till a yellow notice
+	 * @param redNoticeTimeout timeout till a red notice
+	 */
 	constructor(sprintLength : number, yellowNoticeTimeout : number, redNoticeTimeout : number) {
 		this.sprintLength = sprintLength
 		this.sprintLengthInMS = this.sprintLength * 60 * 1000
@@ -55,6 +60,11 @@ export default class SprintRun {
 		this.redNoticeTimeout = redNoticeTimeout
 	}
 
+	/**
+	 * Update the sprintLength for this SprintRun
+	 *
+	 * @param sprintLength length of the SprintRun in minutes
+	 */
 	updateSprintLength(sprintLength : number) {
 		this.sprintLength = sprintLength
 		this.sprintLengthInMS = this.sprintLength * 60 * 1000
@@ -63,14 +73,15 @@ export default class SprintRun {
 		}
 	}
 
+	/**
+	 * Update the yellow and red notice timeout
+	 *
+	 * @param yellowNoticeTimeout timeout till a yellow notice
+	 * @param redNoticeTimeout timeout till a red notice
+	 */
 	updateNoticeTimeout(yellowNoticeTimeout : number, redNoticeTimeout : number) {
 		this.yellowNoticeTimeout = yellowNoticeTimeout
 		this.redNoticeTimeout = redNoticeTimeout
-	}
-
-	getWordCountDisplay() : number {
-		let wordCountDisplay : number = this.wordCount - this.previousWordCount
-		return wordCountDisplay >= 0 ? wordCountDisplay : 0
 	}
 
 	updateNotWriting(updateTime : number) {
@@ -110,24 +121,27 @@ export default class SprintRun {
 		return this.sprintStarted
 	}
 
+	/**
+	 * Returns true if this sprint run is complete
+	 */
 	isComplete(): boolean {
 		return this.sprintComplete
 	}
 
-	getMiniStats() {
-		return {
-			secondsLeft: secondsToMMSS(this.millisecondsLeft / 1000),
-			wordCount: this.getWordCountDisplay()
-		}
-	}
-
-	startSprint(previousWordCount : number, update : (status : string, statusChanged : boolean) => void, endOfSprintCallback : (sprintRunStat : SprintRunStat) => void): number {
+	/**
+	 * Start the sprint
+	 *
+	 * @param previousWordCount
+	 * @param update
+	 * @param endOfSprintCallback
+	 */
+	start(previousWordCount : number, update : (status : string, statusChanged : boolean) => void, endOfSprintCallback : (sprintRunStat : SprintRunStat) => void): number {
 		this.endOfSprintCallback = endOfSprintCallback
 		this.previousWordCount = previousWordCount
 		this.wordsLastCount = previousWordCount
 
 		const now = Date.now()
-		this.created = moment.utc().valueOf()
+		this.created = now
 		this.lastWordTime = now
 		this.sprintStarted = true
 
@@ -185,7 +199,7 @@ export default class SprintRun {
 	/**
 	 * Stop this sprint and return the latest stats
 	 */
-	stopSprint(): SprintRunStat {
+	stop(): SprintRunStat {
 		if (this.sprintStarted) {
 			// this must be called before we getStats(), otherwise the data will be missing
 			this.updateNotWriting(Date.now())
@@ -198,6 +212,18 @@ export default class SprintRun {
 			return stats
 		}
 		return null
+	}
+
+	getWordCountDisplay() : number {
+		let wordCountDisplay : number = this.wordCount - this.previousWordCount
+		return wordCountDisplay >= 0 ? wordCountDisplay : 0
+	}
+
+	getMiniStats() {
+		return {
+			secondsLeft: secondsToMMSS(this.millisecondsLeft / 1000),
+			wordCount: this.getWordCountDisplay()
+		}
 	}
 
 	getStats() : SprintRunStat {

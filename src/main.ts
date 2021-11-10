@@ -32,6 +32,9 @@ const DEFAULT_SETTINGS: WordSprintSettings = {
 	dailyGoal: null,
 	overallGoal: null,
 	defaultTab: "stats",
+	showEncouragementNotices: false,
+	encouragementWordCount: 250,
+	encouragementText: "Amazing job so far! Keep it going you're doing great!"
 }
 
 export default class WordSprintPlugin extends Plugin {
@@ -237,6 +240,43 @@ export default class WordSprintPlugin extends Plugin {
 		})
 
 		this.addCommand({
+			id: 'insert-all-word-sprint-stats-table',
+			name: 'Insert All Word Sprint Stats Table',
+			editorCallback: async (editor: Editor) => {
+
+				let statsText : string = ''
+
+				statsText += `### Word Sprints Table\n`
+				statsText += '| # | Length | Total Words | Average Words | Yellow Notices | Red Notices | Longest Stretch Not Writing | Total Time Not Writing | Total Words Added | Total Words Deleted | Total Net Words |\n'
+				statsText += '|---|--------|-------------|---------------|----------------|-------------|-----------------------------|------------------------|-------------------|---------------------|-----------------|\n'
+
+				this.sprintHistory.forEach((sprint: SprintRunStat, index:number) => {
+					statsText += `| ${index + 1}`
+					statsText += `| ${sprint.sprintLength}`
+					statsText += `| ${sprint.totalWordsWritten}`
+					statsText += `| ${numeral(sprint.averageWordsPerMinute).format('0.0')}`
+					statsText += `| ${sprint.yellowNotices}`
+					statsText += `| ${sprint.redNotices}`
+					statsText += `| ${secondsToHumanize(sprint.longestStretchNotWriting)}`
+					statsText += `| ${secondsToHumanize(sprint.totalTimeNotWriting)}`
+					statsText += `| ${sprint.wordsAdded}`
+					statsText += `| ${sprint.wordsDeleted}`
+					statsText += `| ${sprint.wordsNet}`
+					statsText += '|\n'
+				})
+
+
+/*
+| Item         | Price     | # In stock |
+|--------------|-----------|------------|
+| Juicy Apples | 1.99      | *7*        |
+| Bananas      | **1.89**  | 5234       |
+ */
+				editor.replaceSelection(statsText)
+			}
+		})
+
+		this.addCommand({
 			id: 'start-word-sprint',
 			name: 'Start Word Sprint',
 			callback: () => {
@@ -258,7 +298,7 @@ export default class WordSprintPlugin extends Plugin {
 			callback: async () => {
 				if (this.theSprint && this.theSprint.isStarted()) {
 					this.statusBarItemEl.setText('')
-					const sprintRunStat : SprintRunStat = this.theSprint.stopSprint()
+					const sprintRunStat : SprintRunStat = this.theSprint.stop()
 					this.showEndOfSprintStatsModal()
 
 					this.sprintHistory.push(this.theSprint.getStats())
@@ -314,9 +354,18 @@ export default class WordSprintPlugin extends Plugin {
 			this.theSprint.typingUpdate(contents, filepath)
 		}, 400, false)
 
-		const sprintInterval = this.theSprint.startSprint(previousWordCount, (status: string, statusChanged : boolean) => {
+		let encouragementNoticeCount = 0
+
+		const sprintInterval = this.theSprint.start(previousWordCount, (status: string, statusChanged : boolean) => {
 			const miniStats = this.theSprint.getMiniStats()
 
+			if (this.settings.showEncouragementNotices) {
+				const hitCount = Math.floor(miniStats.wordCount / this.settings.encouragementWordCount)
+				if (hitCount > encouragementNoticeCount) {
+					new Notice(this.settings.encouragementText)
+				}
+				encouragementNoticeCount = hitCount
+			}
 			if (statusChanged) {
 				switch(status) {
 					case 'YELLOW':
