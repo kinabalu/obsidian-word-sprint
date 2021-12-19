@@ -340,7 +340,6 @@ export default class WordSprintPlugin extends Plugin {
 			this.saveStats()
 			this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 		} else {
-			// this.theSprint.updateSprintLength(this.settings.sprintLength)
 			this.theSprint.updateNoticeTimeout(this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 		}
 
