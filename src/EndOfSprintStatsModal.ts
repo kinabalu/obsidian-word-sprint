@@ -65,6 +65,12 @@ export default class EndOfSprintStatsModal extends Modal {
 				text.setDisabled(true)
 			})
 		new Setting(contentEl)
+			.setName("Average Words Per Hour")
+			.addText((text) => {
+				text.setValue(`${numeral(this.sprintRunStat.averageWordsPerMinute * 60).format('0.0')}`)
+				text.setDisabled(true)
+			})
+		new Setting(contentEl)
 			.setName("Yellow Notices")
 			.addText((text) => {
 				text.setValue(`${this.sprintRunStat.yellowNotices}`)

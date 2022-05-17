@@ -146,6 +146,7 @@ export default class WordSprintPlugin extends Plugin {
 				}
 				statsText += `Total Words Written: ${stats.totalWordsWritten}\n`
 				statsText += `Average Words Per Minute: ${numeral(stats.averageWordsPerMinute).format('0.0')}\n`
+				statsText += `Average Words Per Hour: ${numeral(stats.averageWordsPerMinute * 60).format('0.0')}\n`
 				statsText += `Yellow Notices: ${stats.yellowNotices}\n`
 				statsText += `Red Notices: ${stats.redNotices}\n`
 				statsText += `Longest Stretch Not Writing: ${secondsToHumanize(stats.longestStretchNotWriting)}\n`
@@ -192,6 +193,12 @@ export default class WordSprintPlugin extends Plugin {
 					return total
 				}, 0) / totalSprints
 				statsText += `Average Words per Minute: ${numeral(averageWPM).format('0.00')}\n`
+
+				const averageWPH = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+					total += amount.averageWordsPerMinute * 60
+					return total
+				}, 0) / totalSprints
+				statsText += `Average Words per Hour: ${numeral(averageWPH).format('0.00')}\n`
 
 				const redNotices = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
 					total += amount.redNotices
@@ -247,14 +254,15 @@ export default class WordSprintPlugin extends Plugin {
 				let statsText : string = ''
 
 				statsText += `### Word Sprints Table\n`
-				statsText += '| # | Length | Total Words | Average Words | Yellow Notices | Red Notices | Longest Stretch Not Writing | Total Time Not Writing | Total Words Added | Total Words Deleted | Total Net Words |\n'
-				statsText += '|---|--------|-------------|---------------|----------------|-------------|-----------------------------|------------------------|-------------------|---------------------|-----------------|\n'
+				statsText += '| # | Length | Total Words | Average Words | Avg Words/Hour | Yellow Notices | Red Notices | Longest Stretch Not Writing | Total Time Not Writing | Total Words Added | Total Words Deleted | Total Net Words |\n'
+				statsText += '|---|--------|-------------|---------------|----------------|----------------|-------------|-----------------------------|------------------------|-------------------|---------------------|-----------------|\n'
 
 				this.sprintHistory.forEach((sprint: SprintRunStat, index:number) => {
 					statsText += `| ${index + 1}`
 					statsText += `| ${sprint.sprintLength}`
 					statsText += `| ${sprint.totalWordsWritten}`
 					statsText += `| ${numeral(sprint.averageWordsPerMinute).format('0.0')}`
+					statsText += `| ${numeral(sprint.averageWordsPerMinute * 60).format('0.0')}`
 					statsText += `| ${sprint.yellowNotices}`
 					statsText += `| ${sprint.redNotices}`
 					statsText += `| ${secondsToHumanize(sprint.longestStretchNotWriting)}`
