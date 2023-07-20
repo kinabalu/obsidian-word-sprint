@@ -97,6 +97,7 @@ export const StatReactView = () => {
 	}
 
 	const startSprint = () => {
+		plugin.startButtonUsed()
 		plugin.startSprintCommand()
 	}
 

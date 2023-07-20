@@ -45,6 +45,9 @@ export default class WordSprintPlugin extends Plugin {
 	sprintInterval : number
 	theSprint : SprintRun
 
+	startButtonClicked : boolean = false
+	startButtonClickedFirstLetter : boolean = false
+
 	sprintHistory : SprintRunStat[] = []
 
 	async emptyTotalStats() {
@@ -329,6 +332,11 @@ export default class WordSprintPlugin extends Plugin {
 		}
 	}
 
+	startButtonUsed() {
+		this.startButtonClicked = true
+		this.startButtonClickedFirstLetter = true
+	}
+
 	startSprintCommand() {
 		if (this.theSprint && this.theSprint.isStarted()) {
 			new Notice("Sprint already started! Please stop current sprint if you'd like to reset")
@@ -344,6 +352,7 @@ export default class WordSprintPlugin extends Plugin {
 		}
 
 		let previousWordCount = 0
+
 		if (this.app.workspace.getActiveViewOfType(MarkdownView)) {
 			let viewData = this.app.workspace.getActiveViewOfType(MarkdownView).getViewData()
 			previousWordCount = getWordCount(viewData)
@@ -430,6 +439,11 @@ export default class WordSprintPlugin extends Plugin {
 	onQuickPreview(file: TFile, contents: string) {
 		if (this.app.workspace.getActiveViewOfType(MarkdownView)) {
 			if (this.theSprint && this.theSprint.isStarted()) {
+				if (this.startButtonClicked && this.startButtonClickedFirstLetter) {
+					this.theSprint.previousWordCount = getWordCount(contents) - 1
+					this.startButtonClicked = false
+					this.startButtonClickedFirstLetter = false
+				}
 				this.debouncedUpdate(contents, file.path)
 			}
 		}
