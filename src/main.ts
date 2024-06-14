@@ -22,6 +22,11 @@ import ChangeSprintTimeModal from "./ChangeSprintTimeModal";
 import NanowrimoApi from "./nanowrimo-api";
 
 const DEFAULT_SETTINGS: WordSprintSettings = {
+	nanowrimoAuthToken: "",
+	nanowrimoProjectChallengeId: 0,
+	nanowrimoProjectId: 0,
+	nanowrimoProjectName: 0,
+	nanowrimoUserId: 0,
 	sprintLength: 25,
 	showLagNotices: true,
 	showLeafUpdates: true,
@@ -40,7 +45,7 @@ const DEFAULT_SETTINGS: WordSprintSettings = {
 export default class WordSprintPlugin extends Plugin {
 	settings: WordSprintSettings
 	statusBarItemEl : HTMLElement
-	debouncedUpdate: Debouncer<[contents: string, filepath: string]>
+	debouncedUpdate: Debouncer<[contents: string, filepath: string], any>
 
 	sprintInterval : number
 	theSprint : SprintRun
@@ -268,13 +273,6 @@ export default class WordSprintPlugin extends Plugin {
 					statsText += '|\n'
 				})
 
-
-/*
-| Item         | Price     | # In stock |
-|--------------|-----------|------------|
-| Juicy Apples | 1.99      | *7*        |
-| Bananas      | **1.89**  | 5234       |
- */
 				editor.replaceSelection(statsText)
 			}
 		})
@@ -284,6 +282,21 @@ export default class WordSprintPlugin extends Plugin {
 			name: 'Start Word Sprint',
 			callback: () => {
 				this.startSprintCommand()
+			}
+		})
+
+		this.addCommand({
+			id: 'toggle-word-sprint',
+			name: 'Toggle Start/Stop Word Sprint',
+			callback: async () => {
+				if (this.theSprint && this.theSprint.isStarted()) {
+					console.debug("Sprint running -- toggle = stopping")
+					await this.stopWordSprint();
+				} else {
+					new Notice("A new Sprint has started")
+					console.debug("No sprint running -- toggle = starting")
+					this.startSprintCommand();
+				}
 			}
 		})
 
@@ -299,23 +312,27 @@ export default class WordSprintPlugin extends Plugin {
 			id: 'stop-word-sprint',
 			name: 'Stop Word Sprint',
 			callback: async () => {
-				if (this.theSprint && this.theSprint.isStarted()) {
-					this.statusBarItemEl.setText('')
-					const sprintRunStat : SprintRunStat = this.theSprint.stop()
-					this.showEndOfSprintStatsModal()
-
-					this.sprintHistory.push(this.theSprint.getStats())
-					await this.saveStats()
-
-					this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
-
-					new Notice(`Word Sprint Cancelled! Total words written: ${sprintRunStat.totalWordsWritten}`)
-				} else {
-					new Notice('No Word Sprint running')
-				}
+				await this.stopWordSprint();
 			}
 		})
 		this.addSettingTab(new WordSprintSettingsTab(this.app, this));
+	}
+
+	async stopWordSprint() {
+		if (this.theSprint && this.theSprint.isStarted()) {
+			this.statusBarItemEl.setText('')
+			const sprintRunStat : SprintRunStat = this.theSprint.stop()
+			this.showEndOfSprintStatsModal()
+
+			this.sprintHistory.push(this.theSprint.getStats())
+			await this.saveStats()
+
+			this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
+
+			new Notice(`Word Sprint Cancelled! Total words written: ${sprintRunStat.totalWordsWritten}`)
+		} else {
+			new Notice('No Word Sprint running')
+		}
 	}
 
 	async updateNano(count : number) {
