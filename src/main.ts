@@ -12,7 +12,7 @@ import {
 import numeral from 'numeral'
 
 import EndOfSprintStatsModal from './EndOfSprintStatsModal'
-import WordSprintSettingsTab from './WordSprintSettingsTab'
+import Settings from './settings'
 import {SprintRunStat, WordSprintSettings} from './types'
 import {getWordCount, secondsToHumanize} from './utils'
 import SprintRun from "./SprintRun";
@@ -64,6 +64,69 @@ export default class WordSprintPlugin extends Plugin {
 	async emptyDailyStats() {
 		this.sprintHistory = this.sprintHistory.filter((hist) => hist.created < moment().startOf('day').toDate().valueOf())
 		await this.saveStats()
+	}
+
+	convertJsonToCsv(data: SprintRunStat[]): string {
+		const headers = [
+			"ID",
+			"Name",
+			"Sprint Length",
+			"Elapsed Sprint Length",
+			"Total Words Written",
+			"Average Words Per Minute",
+			"Yellow Notices",
+			"Red Notices",
+			"Longest Stretch Not Writing",
+			"Total Time Not Writing",
+			"Elapsed Milliseconds",
+			"Words Added",
+			"Words Deleted",
+			"Words Net",
+			"Created",
+		];
+
+		const csvRows = data.map((item) =>
+			[
+				item.id,
+				item.name,
+				item.sprintLength,
+				item.elapsedSprintLength,
+				item.totalWordsWritten,
+				item.averageWordsPerMinute,
+				item.yellowNotices,
+				item.redNotices,
+				item.longestStretchNotWriting,
+				item.totalTimeNotWriting,
+				item.elapsedMilliseconds,
+				item.wordsAdded,
+				item.wordsDeleted,
+				item.wordsNet,
+				moment(item.created).toISOString(),
+			].map((value) => (typeof value === "string" ? `"${value}"` : value)).join(",")
+		);
+
+		return [headers.join(","), ...csvRows].join("\n");
+	}
+
+	async exportStats() {
+		const adapter = this.app.vault.adapter;
+		const dir = this.manifest.dir;
+		const path = normalizePath(`${dir}/${STATS_FILENAME}`)
+		let stats : string;
+
+		const csvPath = normalizePath(`${this.app.vault.getRoot().path}/${moment().format('YYYY-MM-DD')} - Word Sprint.csv`)
+		if (await adapter.exists(path)) {
+			stats = await adapter.read(path)
+
+			try {
+				const statsAsJson = JSON.parse(stats) as SprintRunStat[]
+				await adapter.write(csvPath, this.convertJsonToCsv(statsAsJson))
+			} catch(error) {
+				new Notice(`Unable to read ${STATS_FILENAME}`)
+				console.error(error)
+			}
+
+		}
 	}
 
 	async loadStats() {
@@ -315,7 +378,7 @@ export default class WordSprintPlugin extends Plugin {
 				await this.stopWordSprint();
 			}
 		})
-		this.addSettingTab(new WordSprintSettingsTab(this.app, this));
+		this.addSettingTab(new Settings(this.app, this));
 	}
 
 	async stopWordSprint() {

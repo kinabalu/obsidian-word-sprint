@@ -1,9 +1,8 @@
-import {App, PluginSettingTab, Setting, request} from "obsidian";
+import {App, PluginSettingTab, Setting} from "obsidian";
 import WordSprintPlugin from "./main";
-import {SprintRunStat} from "./types";
 import NanowrimoApi from "./nanowrimo-api";
 
-export default class WordSprintSettingsTab extends PluginSettingTab {
+export default class Settings extends PluginSettingTab {
 	plugin: WordSprintPlugin;
 
 	constructor(app: App, plugin: WordSprintPlugin) {
@@ -283,6 +282,14 @@ export default class WordSprintSettingsTab extends PluginSettingTab {
 				}));
 
 		containerEl.createEl('h2', {text: 'Stats'});
+
+		new Setting(containerEl)
+			.addButton(button => button
+				.setButtonText("Export Stats")
+				.onClick(async () => {
+					await this.plugin.exportStats();
+				})
+			)
 
 		new Setting(containerEl)
 			.setName('Reset daily stat')
