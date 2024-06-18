@@ -1,5 +1,6 @@
 import typescript from '@rollup/plugin-typescript';
 import {nodeResolve} from '@rollup/plugin-node-resolve';
+import replace from '@rollup/plugin-replace';
 import commonjs from '@rollup/plugin-commonjs';
 
 const isProd = (process.env.BUILD === 'production');
@@ -21,8 +22,12 @@ export default {
 		exports: 'default',
 		banner,
 	},
-	external: ['obsidian'],
+	external: ['obsidian', 'React', 'ReactDOM'],
 	plugins: [
+		replace({
+			'process.env.NODE_ENV': JSON.stringify(isProd ? 'production' : 'development'),
+			preventAssignment: true, // Prevents assignment errors during transformation
+		}),
 		typescript(),
 		nodeResolve({browser: true}),
 		commonjs(),
