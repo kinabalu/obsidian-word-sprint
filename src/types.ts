@@ -36,3 +36,9 @@ export interface SprintRunStat {
 	wordsDeleted: number,
 	wordsNet: number,
 }
+
+export interface FileMetrics {
+	wordCount: number;
+	wordsAdded: number;
+	wordsDeleted: number;
+}
