@@ -1,7 +1,7 @@
 import {getWordCount, secondsToMMSS} from "./utils";
 
 import {v4 as uuidv4} from 'uuid'
-import {SprintRunStat} from "./types";
+import {SprintRunStat, FileMetrics} from "./types";
 
 export default class SprintRun {
 
@@ -42,6 +42,8 @@ export default class SprintRun {
 
 	yellowNoticeTimeout : number = 10
 	redNoticeTimeout : number = 50
+
+	private fileMetrics: Map<string, FileMetrics> = new Map();
 
 	/**
 	 * Construct a SprintRun instance
@@ -93,25 +95,18 @@ export default class SprintRun {
 		this.totalTimeNotWriting += secondsSinceLastWord
 	}
 
-	typingUpdate(contents: string, filepath: string) {
-		const currentNow = Date.now()
-		this.updateNotWriting(currentNow)
-		this.lastWordTime = currentNow
-		this.wordCount = getWordCount(contents)
+	public typingUpdate(contents: string, filepath: string): void {
+		const currentNow = Date.now();
+		this.updateNotWriting(currentNow);
+		this.lastWordTime = currentNow;
 
-		/* Net words calculation (NEW FEATURE)
-		   This may need to be a bit more granular, otherwise typo correction via ctrl+backspace
-		   will increase net words, even though we're just fixing a newly-added word. As such,
-		   may want to relegate it to the main loop.
-		*/
+		const wordCount = getWordCount(contents);
+		const previousMetrics = this.fileMetrics.get(filepath) || { wordCount: 0, wordsAdded: 0, wordsDeleted: 0 };
+		const netWords = wordCount - previousMetrics.wordCount;
+		const wordsAdded = Math.max(netWords, 0);
+		const wordsDeleted = Math.abs(Math.min(netWords, 0));
 
-		let netWords : number = this.wordCount - this.wordsLastCount
-		this.wordsLastCount = this.wordCount
-		this.wordsAdded += Math.max(netWords, 0)
-		this.wordsDeleted += Math.abs(Math.min(netWords, 0))
-
-		// End new feature code
-
+		this.fileMetrics.set(filepath, { wordCount, wordsAdded: previousMetrics.wordsAdded + wordsAdded, wordsDeleted: previousMetrics.wordsDeleted + wordsDeleted });
 	}
 
 	/**
@@ -220,32 +215,49 @@ export default class SprintRun {
 	}
 
 	getMiniStats() {
+		const aggregateMetrics = Array.from(this.fileMetrics.values()).reduce(
+			(acc, curr) => ({
+				wordCount: acc.wordCount + curr.wordCount,
+				wordsAdded: acc.wordsAdded + curr.wordsAdded,
+				wordsDeleted: acc.wordsDeleted + curr.wordsDeleted,
+			}),
+			{ wordCount: 0, wordsAdded: 0, wordsDeleted: 0 }
+		);
+
 		return {
 			secondsLeft: secondsToMMSS(this.millisecondsLeft / 1000),
-			wordCount: this.getWordCountDisplay()
-		}
+			wordCount: aggregateMetrics.wordCount - this.previousWordCount,
+		};
 	}
 
 	getStats() : SprintRunStat {
+		const aggregateMetrics = Array.from(this.fileMetrics.values()).reduce(
+			(acc, curr) => ({
+				wordCount: acc.wordCount + curr.wordCount,
+				wordsAdded: acc.wordsAdded + curr.wordsAdded,
+				wordsDeleted: acc.wordsDeleted + curr.wordsDeleted,
+			}),
+			{ wordCount: 0, wordsAdded: 0, wordsDeleted: 0 }
+		);
 
-		let averageWordsPerMinute = this.getWordCountDisplay() * 1000 * 60 / Math.floor(Math.max(this.elapsedMilliseconds, 1))
+		let averageWordsPerMinute = (aggregateMetrics.wordCount - this.previousWordCount) * 1000 * 60 / Math.floor(Math.max(this.elapsedMilliseconds, 1));
 
 		return {
 			id: this.id,
 			name: '',
 			sprintLength: this.sprintLength,
 			elapsedSprintLength: Math.floor(this.elapsedMilliseconds / 1000),
-			totalWordsWritten: this.getWordCountDisplay(),
+			totalWordsWritten: aggregateMetrics.wordCount - this.previousWordCount,
 			averageWordsPerMinute: averageWordsPerMinute,
 			yellowNotices: this.yellowNoticeCount,
 			redNotices: this.redNoticeCount,
 			longestStretchNotWriting: this.longestStretchNotWriting,
 			totalTimeNotWriting: this.totalTimeNotWriting,
 			elapsedMilliseconds: this.elapsedMilliseconds,
-			wordsAdded: this.wordsAdded,
-			wordsDeleted: this.wordsDeleted,
-			wordsNet: this.wordsAdded - this.wordsDeleted,
+			wordsAdded: aggregateMetrics.wordsAdded,
+			wordsDeleted: aggregateMetrics.wordsDeleted,
+			wordsNet: aggregateMetrics.wordsAdded - aggregateMetrics.wordsDeleted,
 			created: this.created,
-		} as SprintRunStat
+		} as SprintRunStat;
 	}
 }
