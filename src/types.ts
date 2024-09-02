@@ -41,4 +41,5 @@ export interface FileMetrics {
 	wordCount: number;
 	wordsAdded: number;
 	wordsDeleted: number;
+	netWords: number;
 }

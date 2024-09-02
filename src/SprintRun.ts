@@ -101,12 +101,12 @@ export default class SprintRun {
 		this.lastWordTime = currentNow;
 
 		const wordCount = getWordCount(contents);
-		const previousMetrics = this.fileMetrics.get(filepath) || { wordCount: 0, wordsAdded: 0, wordsDeleted: 0 };
+		const previousMetrics = this.fileMetrics.get(filepath) || { wordCount: wordCount - 1, wordsAdded: 0, wordsDeleted: 0, netWords: 0 };
 		const netWords = wordCount - previousMetrics.wordCount;
 		const wordsAdded = Math.max(netWords, 0);
 		const wordsDeleted = Math.abs(Math.min(netWords, 0));
 
-		this.fileMetrics.set(filepath, { wordCount, wordsAdded: previousMetrics.wordsAdded + wordsAdded, wordsDeleted: previousMetrics.wordsDeleted + wordsDeleted });
+		this.fileMetrics.set(filepath, { wordCount, wordsAdded: previousMetrics.wordsAdded + wordsAdded, wordsDeleted: previousMetrics.wordsDeleted + wordsDeleted, netWords: previousMetrics.wordsAdded + wordsAdded - (previousMetrics.wordsDeleted + wordsDeleted) });
 	}
 
 	/**
@@ -220,13 +220,14 @@ export default class SprintRun {
 				wordCount: acc.wordCount + curr.wordCount,
 				wordsAdded: acc.wordsAdded + curr.wordsAdded,
 				wordsDeleted: acc.wordsDeleted + curr.wordsDeleted,
+				netWords: acc.netWords + curr.netWords,
 			}),
-			{ wordCount: 0, wordsAdded: 0, wordsDeleted: 0 }
+			{ wordCount: 0, wordsAdded: 0, wordsDeleted: 0, netWords: 0}
 		);
 
 		return {
 			secondsLeft: secondsToMMSS(this.millisecondsLeft / 1000),
-			wordCount: aggregateMetrics.wordCount - this.previousWordCount,
+			wordCount: aggregateMetrics.netWords,
 		};
 	}
 
@@ -236,18 +237,19 @@ export default class SprintRun {
 				wordCount: acc.wordCount + curr.wordCount,
 				wordsAdded: acc.wordsAdded + curr.wordsAdded,
 				wordsDeleted: acc.wordsDeleted + curr.wordsDeleted,
+				netWords: acc.netWords + curr.netWords,
 			}),
-			{ wordCount: 0, wordsAdded: 0, wordsDeleted: 0 }
+			{ wordCount: 0, wordsAdded: 0, wordsDeleted: 0, netWords: 0 }
 		);
 
-		let averageWordsPerMinute = (aggregateMetrics.wordCount - this.previousWordCount) * 1000 * 60 / Math.floor(Math.max(this.elapsedMilliseconds, 1));
+		let averageWordsPerMinute = (aggregateMetrics.netWords) * 1000 * 60 / Math.floor(Math.max(this.elapsedMilliseconds, 1));
 
 		return {
 			id: this.id,
 			name: '',
 			sprintLength: this.sprintLength,
 			elapsedSprintLength: Math.floor(this.elapsedMilliseconds / 1000),
-			totalWordsWritten: aggregateMetrics.wordCount - this.previousWordCount,
+			totalWordsWritten: aggregateMetrics.netWords,
 			averageWordsPerMinute: averageWordsPerMinute,
 			yellowNotices: this.yellowNoticeCount,
 			redNotices: this.redNoticeCount,
@@ -256,7 +258,7 @@ export default class SprintRun {
 			elapsedMilliseconds: this.elapsedMilliseconds,
 			wordsAdded: aggregateMetrics.wordsAdded,
 			wordsDeleted: aggregateMetrics.wordsDeleted,
-			wordsNet: aggregateMetrics.wordsAdded - aggregateMetrics.wordsDeleted,
+			wordsNet: aggregateMetrics.netWords,
 			created: this.created,
 		} as SprintRunStat;
 	}

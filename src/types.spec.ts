@@ -6,10 +6,12 @@ describe("FileMetrics", () => {
       wordCount: 100,
       wordsAdded: 50,
       wordsDeleted: 20,
+      netWords: 30,
     };
 
     expect(fileMetrics.wordCount).toBe(100);
     expect(fileMetrics.wordsAdded).toBe(50);
     expect(fileMetrics.wordsDeleted).toBe(20);
+    expect(fileMetrics.netWords).toBe(30);
   });
 });
