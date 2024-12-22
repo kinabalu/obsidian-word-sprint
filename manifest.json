@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-word-sprint",
 	"name": "Word Sprint",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"minAppVersion": "1.5.12",
 	"description": "Word Sprint for Obsidian plugin for your writing projects like Nanowrimo",
 	"author": "Andrew Lombardi",
