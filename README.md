@@ -18,9 +18,14 @@ Reference: https://www.wikiwrimo.org/wiki/Word_war
 ### Coming Soon
 - Online sprints to challenge and do sprints with friends
 
+
 ### Installation
-Plugin is pending review to be included in the community plugins. You can like or heart the 
-pull request if you'd like to get more attention on the plugin: https://github.com/obsidianmd/obsidian-releases/pull/601
+The Word Sprint Plugin is available in the Obsidian Community Plugins area.
+
+1. Turn off restricted mode if it's on
+2. Click 'Browse' under Community pllugins and search for "Word Sprint"
+3. Install and enable the plugin
+4. Have fun!
 
 ### Manual Installation
 Two methods and the first one is easier:
