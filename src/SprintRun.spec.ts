@@ -42,11 +42,12 @@ describe("typingUpdate", () => {
 		expect(sprintRun["fileMetrics"].get("file1.md")?.wordCount).toBe(2);
 	});
 
-	it("should update the fileMetrics Map with the correct words added and deleted", () => {
+	it("should not count a file's existing words, only the first keystroke and later changes", () => {
 		const sprintRun = new SprintRun(25, 10, 50);
 		sprintRun.typingUpdate("Hello world", "file1.md");
+		expect(sprintRun["fileMetrics"].get("file1.md")?.wordsAdded).toBe(1);
 		sprintRun.typingUpdate("Hello world lorem ipsum", "file1.md");
-		expect(sprintRun["fileMetrics"].get("file1.md")?.wordsAdded).toBe(4);
+		expect(sprintRun["fileMetrics"].get("file1.md")?.wordsAdded).toBe(3);
 		expect(sprintRun["fileMetrics"].get("file1.md")?.wordsDeleted).toBe(0);
 	});
 
@@ -68,7 +69,7 @@ describe("getMiniStats and getStats", () => {
 	  afterEach(() => {
 		jest.useRealTimers();
 	  });
-	it("should aggregate word count metrics across multiple files", () => {
+	it("should aggregate words written across multiple files without counting existing words", () => {
 		const sprintRun = new SprintRun(25, 10, 50);
 		sprintRun.previousWordCount = 0;
 		sprintRun.typingUpdate("Hello world", "file1.md");
@@ -76,13 +77,13 @@ describe("getMiniStats and getStats", () => {
 		sprintRun.typingUpdate("Hello world lorem ipsum", "file1.md");
 
 		const miniStats = sprintRun.getMiniStats();
-		expect(miniStats.wordCount).toBe(6);
+		expect(miniStats.wordCount).toBe(4);
 
 		jest.advanceTimersByTime(1000);
 		const stats = sprintRun.getStats();
-		expect(stats.totalWordsWritten).toBe(6);
-		expect(stats.wordsAdded).toBe(6);
+		expect(stats.totalWordsWritten).toBe(4);
+		expect(stats.wordsAdded).toBe(4);
 		expect(stats.wordsDeleted).toBe(0);
-		expect(stats.wordsNet).toBe(6);
+		expect(stats.wordsNet).toBe(4);
 	});
 })
