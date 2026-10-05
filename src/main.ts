@@ -19,14 +19,8 @@ import SprintRun from "./SprintRun";
 import StatView, {STAT_VIEW_TYPE} from "./StatView";
 import {ICON_NAME, STATS_FILENAME} from "./constants";
 import ChangeSprintTimeModal from "./ChangeSprintTimeModal";
-import NanowrimoApi from "./nanowrimo-api";
 
 const DEFAULT_SETTINGS: WordSprintSettings = {
-	nanowrimoAuthToken: "",
-	nanowrimoProjectChallengeId: 0,
-	nanowrimoProjectId: 0,
-	nanowrimoProjectName: 0,
-	nanowrimoUserId: 0,
 	sprintLength: 25,
 	showLagNotices: true,
 	showLeafUpdates: true,
@@ -45,7 +39,7 @@ const DEFAULT_SETTINGS: WordSprintSettings = {
 export default class WordSprintPlugin extends Plugin {
 	settings: WordSprintSettings
 	statusBarItemEl : HTMLElement
-	debouncedUpdate: Debouncer<[contents: string, filepath: string], any>
+	debouncedUpdate: Debouncer<[contents: string, filepath: string], void>
 
 	sprintInterval : number
 	theSprint : SprintRun
@@ -158,10 +152,6 @@ export default class WordSprintPlugin extends Plugin {
 		const dir = this.manifest.dir;
 		const path = normalizePath(`${dir}/${statsFilename}`)
 
-		if (this.settings.nanowrimoProjectId && this.settings.nanowrimoProjectChallengeId) {
-			await this.updateNano(this.theSprint.getStats().totalWordsWritten)
-		}
-
 		try {
 			await adapter.write(path, JSON.stringify(this.sprintHistory))
 		} catch(error) {
@@ -182,25 +172,25 @@ export default class WordSprintPlugin extends Plugin {
 			(leaf) => new StatView(this, leaf),
 		)
 
-		this.addRibbonIcon(ICON_NAME, "Activate Word Sprint Leaf", () => {
-			this.activateView()
+		this.addRibbonIcon(ICON_NAME, "Open word sprint", () => {
+			void this.activateView()
 		})
 		this.registerEvent(
-			this.app.workspace.on('quick-preview', this.onQuickPreview.bind(this))
+			this.app.workspace.on('quick-preview', (file: TFile, contents: string) => this.onQuickPreview(file, contents))
 		)
 
 		this.addCommand({
 			id: 'show-word-sprint-leaf',
-			name: 'Show Word Sprint Leaf',
+			name: 'Show sprint leaf',
 			callback: () => {
-				this.activateView()
+				void this.activateView()
 			}
 		})
 
 		this.addCommand({
 			id: 'insert-last-word-sprint-stats',
-			name: 'Insert Last Word Sprint Stats',
-			editorCallback: async (editor: Editor) => {
+			name: 'Insert last sprint stats',
+			editorCallback: (editor: Editor) => {
 				let statsText : string = '';
 
 				if (this.theSprint && this.theSprint.isStarted()) {
@@ -230,8 +220,8 @@ export default class WordSprintPlugin extends Plugin {
 		})
 		this.addCommand({
 			id: 'insert-average-word-sprint-stats',
-			name: 'Insert Average Word Sprint Stats',
-			editorCallback: async (editor: Editor) => {
+			name: 'Insert average sprint stats',
+			editorCallback: (editor: Editor) => {
 				let statsText : string = '';
 
 				if (this.theSprint && this.theSprint.isStarted()) {
@@ -241,66 +231,66 @@ export default class WordSprintPlugin extends Plugin {
 				statsText = '### Average Word Sprint Stats\n'
 				const totalSprints = this.sprintHistory.length
 				statsText += `Total Sprints: ${totalSprints}\n`
-				const wordsWritten = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const wordsWritten = this.sprintHistory.reduce((total: number, amount: SprintRunStat) => {
 					total += amount.totalWordsWritten
 					return total
 				}, 0)
 				statsText += `Total Words Written: ${numeral(wordsWritten).format('0.00')}\n`
-				const totalSprintTime = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const totalSprintTime = this.sprintHistory.reduce((total: number, amount: SprintRunStat) => {
 					total += amount.elapsedSprintLength
 					return total
 				}, 0)
 				statsText += `Total Sprinting Time: ${secondsToHumanize(totalSprintTime)}\n`
 
-				const averageSprintLength = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const averageSprintLength = this.sprintHistory.reduce((total: number, amount: SprintRunStat) => {
 					total += amount.elapsedSprintLength
 					return total
 				}, 0) / totalSprints
 				statsText += `Average Sprint Length: ${secondsToHumanize(averageSprintLength)}\n`
 
-				const averageWPM = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const averageWPM = this.sprintHistory.reduce((total: number, amount: SprintRunStat) => {
 					total += amount.averageWordsPerMinute
 					return total
 				}, 0) / totalSprints
 				statsText += `Average Words per Minute: ${numeral(averageWPM).format('0.00')}\n`
 
-				const redNotices = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const redNotices = this.sprintHistory.reduce((total: number, amount: SprintRunStat) => {
 					total += amount.redNotices
 					return total
 				}, 0)  / totalSprints
 				statsText += `Average Red Notices: ${numeral(redNotices).format('0.00')}\n`
 
-				const yellowNotices = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const yellowNotices = this.sprintHistory.reduce((total: number, amount: SprintRunStat) => {
 					total += amount.yellowNotices
 					return total
 				}, 0) / totalSprints
 				statsText += `Average Yellow Notices: ${numeral(yellowNotices).format('0.00')}\n`
 
-				const averageLongestStretchNotWriting = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const averageLongestStretchNotWriting = this.sprintHistory.reduce((total: number, amount: SprintRunStat) => {
 					total += amount.longestStretchNotWriting
 					return total
 				}, 0) / totalSprints
 				statsText += `Average Longest Stretches Not Writing: ${secondsToHumanize(averageLongestStretchNotWriting)}\n`
 
-				const averageTimeNotWriting = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const averageTimeNotWriting = this.sprintHistory.reduce((total: number, amount: SprintRunStat) => {
 					total += amount.totalTimeNotWriting
 					return total
 				}, 0) / totalSprints
 				statsText += `Average Time Not Writing: ${secondsToHumanize(averageTimeNotWriting)}\n`
 
-				const wordsAdded = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const wordsAdded = this.sprintHistory.reduce((total: number, amount: SprintRunStat) => {
 					total += amount.wordsAdded
 					return total
 				}, 0) / totalSprints
 				statsText += `Average Words Added: ${numeral(wordsAdded).format('0.00')}\n`
 
-				const wordsDeleted = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const wordsDeleted = this.sprintHistory.reduce((total: number, amount: SprintRunStat) => {
 					total += amount.wordsDeleted
 					return total
 				}, 0) / totalSprints
 				statsText += `Average Words Deleted: ${numeral(wordsDeleted).format('0.00')}\n`
 
-				const netWords = this.sprintHistory.reduce((total: number, amount: SprintRunStat, currentIndex : number, array: SprintRunStat[]) => {
+				const netWords = this.sprintHistory.reduce((total: number, amount: SprintRunStat) => {
 					total += amount.wordsNet
 					return total
 				}, 0) / totalSprints
@@ -312,8 +302,8 @@ export default class WordSprintPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'insert-all-word-sprint-stats-table',
-			name: 'Insert All Word Sprint Stats Table',
-			editorCallback: async (editor: Editor) => {
+			name: 'Insert all sprint stats table',
+			editorCallback: (editor: Editor) => {
 
 				let statsText : string = ''
 
@@ -342,7 +332,7 @@ export default class WordSprintPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'start-word-sprint',
-			name: 'Start Word Sprint',
+			name: 'Start sprint',
 			callback: () => {
 				this.startSprintCommand()
 			}
@@ -350,13 +340,13 @@ export default class WordSprintPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'toggle-word-sprint',
-			name: 'Toggle Start/Stop Word Sprint',
+			name: 'Toggle start/stop sprint',
 			callback: async () => {
 				if (this.theSprint && this.theSprint.isStarted()) {
 					console.debug("Sprint running -- toggle = stopping")
 					await this.stopWordSprint();
 				} else {
-					new Notice("A new Sprint has started")
+					new Notice("A new sprint has started")
 					console.debug("No sprint running -- toggle = starting")
 					this.startSprintCommand();
 				}
@@ -365,7 +355,7 @@ export default class WordSprintPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'change-word-sprint-length',
-			name: 'Change Word Sprint Length',
+			name: 'Change sprint length',
 			callback: () => {
 				this.showChangeSprintTimeModal()
 			}
@@ -373,7 +363,7 @@ export default class WordSprintPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'stop-word-sprint',
-			name: 'Stop Word Sprint',
+			name: 'Stop sprint',
 			callback: async () => {
 				await this.stopWordSprint();
 			}
@@ -394,21 +384,7 @@ export default class WordSprintPlugin extends Plugin {
 
 			new Notice(`Word Sprint Cancelled! Total words written: ${sprintRunStat.totalWordsWritten}`)
 		} else {
-			new Notice('No Word Sprint running')
-		}
-	}
-
-	async updateNano(count : number) {
-		try {
-			const nanowrimoApi = new NanowrimoApi(this.settings.nanowrimoAuthToken)
-			const projectSession = await nanowrimoApi.updateProject(`${this.settings.nanowrimoProjectId}`, `${this.settings.nanowrimoProjectChallengeId}`, count)
-
-			if (projectSession) {
-				new Notice(`Updated NaNoWriMo project with latest sprint count: ${count}`)
-			}
-		} catch(error) {
-			console.error(error)
-			new Notice('Error occurred updating NaNoWriMo project with sprint count')
+			new Notice('No word sprint running')
 		}
 	}
 
@@ -425,7 +401,7 @@ export default class WordSprintPlugin extends Plugin {
 
 		if (this.theSprint.isComplete()) {
 			this.sprintHistory.push(this.theSprint.getStats())
-			this.saveStats()
+			void this.saveStats()
 			this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 		} else {
 			this.theSprint.updateNoticeTimeout(this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
@@ -457,10 +433,14 @@ export default class WordSprintPlugin extends Plugin {
 			if (statusChanged) {
 				switch(status) {
 					case 'YELLOW':
-						this.settings.showLagNotices && new Notice(this.settings.yellowNoticeText)
+						if (this.settings.showLagNotices) {
+							new Notice(this.settings.yellowNoticeText)
+						}
 						break
 					case 'RED':
-						this.settings.showLagNotices && new Notice(this.settings.redNoticeText)
+						if (this.settings.showLagNotices) {
+							new Notice(this.settings.redNoticeText)
+						}
 						break
 					default:
 				}
@@ -468,7 +448,7 @@ export default class WordSprintPlugin extends Plugin {
 			this.statusBarItemEl.setText(`Word Sprint - ${miniStats.secondsLeft} left - ${miniStats.wordCount} words written`)
 		},(sprintRunStat : SprintRunStat) => {
 			this.sprintHistory.push(this.theSprint.getStats())
-			this.saveStats()
+			void this.saveStats()
 
 			this.theSprint = new SprintRun(this.settings.sprintLength, this.settings.yellowNoticeTimeout, this.settings.redNoticeTimeout)
 
@@ -499,21 +479,26 @@ export default class WordSprintPlugin extends Plugin {
 		}
 	}
 
-	async onunload() {
-		this.app.workspace.detachLeavesOfType(STAT_VIEW_TYPE)
-	}
-
+	/**
+	 * Reveals the stats leaf, creating it in the right sidebar only if it does not already exist
+	 * so a leaf the user has moved elsewhere stays where they put it.
+	 */
 	async activateView() {
-		this.app.workspace.detachLeavesOfType(STAT_VIEW_TYPE)
+		const {workspace} = this.app
+		let leaf = workspace.getLeavesOfType(STAT_VIEW_TYPE)[0]
 
-		await this.app.workspace.getRightLeaf(false).setViewState({
-			type: STAT_VIEW_TYPE,
-			active: true,
-		})
+		if (!leaf) {
+			leaf = workspace.getRightLeaf(false)
+			if (!leaf) {
+				return
+			}
+			await leaf.setViewState({
+				type: STAT_VIEW_TYPE,
+				active: true,
+			})
+		}
 
-		this.app.workspace.revealLeaf(
-			this.app.workspace.getLeavesOfType(STAT_VIEW_TYPE)[0]
-		)
+		await workspace.revealLeaf(leaf)
 	}
 
 	onQuickPreview(file: TFile, contents: string) {
@@ -530,7 +515,7 @@ export default class WordSprintPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<WordSprintSettings>);
 	}
 
 	async saveSettings() {

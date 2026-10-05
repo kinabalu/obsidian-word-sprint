@@ -10,25 +10,21 @@ export default class EndOfSprintStatsModal extends Modal {
 
 	constructor(app: App, sprintRunStat : SprintRunStat);
 	constructor(app: App, sprintHistory : SprintRunStat[], statIndex : number);
-	constructor(...params: any[]) {
-		super(params[0]);
+	constructor(app: App, statOrHistory: SprintRunStat | SprintRunStat[], statIndex?: number) {
+		super(app);
 
-		if (params.length === 2) {
-			this.sprintRunStat = params[1]
-			return
-		}
-
-		if (params.length === 3) {
-			this.sprintHistory = params[1]
-			this.statIndex = params[2]
-
+		if (Array.isArray(statOrHistory)) {
+			this.sprintHistory = statOrHistory
+			this.statIndex = statIndex ?? statOrHistory.length - 1
 			this.sprintRunStat = this.sprintHistory[this.statIndex]
 			return
 		}
+
+		this.sprintRunStat = statOrHistory
 	}
 
 	renderStats(contentEl : HTMLElement) {
-		let header = this.sprintHistory ? `Word Sprint Stats (${this.statIndex + 1} of ${this.sprintHistory.length})` : 'Word Sprint Stats'
+		let header = this.sprintHistory ? `Word sprint stats (${this.statIndex + 1} of ${this.sprintHistory.length})` : 'Word sprint stats'
 		contentEl.createEl('h2', {text: header})
 
 		let sprintLengthText : string = ''
@@ -40,50 +36,50 @@ export default class EndOfSprintStatsModal extends Modal {
 
 		if (this.sprintHistory && this.sprintHistory.length > 1) {
 			new Setting(contentEl)
-				.setName("Sprint Date")
+				.setName("Sprint date")
 				.addText((text) => {
 					text.setValue(moment(this.sprintRunStat.created).format('YYYY-MM-DD HH:mm:ss'))
 					text.setDisabled(true)
 				})
 		}
 		new Setting(contentEl)
-			.setName("Sprint Length")
+			.setName("Sprint length")
 			.addText((text) => {
 				text.setValue(sprintLengthText)
 				text.setDisabled(true)
 			})
 		new Setting(contentEl)
-			.setName("Total Words Written")
+			.setName("Total words written")
 			.addText((text) => {
 				text.setValue(`${this.sprintRunStat.totalWordsWritten}`)
 				text.setDisabled(true)
 			})
 		new Setting(contentEl)
-			.setName("Average Words Per Minute")
+			.setName("Average words per minute")
 			.addText((text) => {
 				text.setValue(`${numeral(this.sprintRunStat.averageWordsPerMinute).format('0.0')}`)
 				text.setDisabled(true)
 			})
 		new Setting(contentEl)
-			.setName("Yellow Notices")
+			.setName("Yellow notices")
 			.addText((text) => {
 				text.setValue(`${this.sprintRunStat.yellowNotices}`)
 				text.setDisabled(true)
 			})
 		new Setting(contentEl)
-			.setName("Red Notices")
+			.setName("Red notices")
 			.addText((text) => {
 				text.setValue(`${this.sprintRunStat.redNotices}`)
 				text.setDisabled(true)
 			})
 		new Setting(contentEl)
-			.setName("Longest Stretch Not Writing")
+			.setName("Longest stretch not writing")
 			.addText((text) => {
 				text.setValue(`${secondsToHumanize(this.sprintRunStat.longestStretchNotWriting)}`)
 				text.setDisabled(true)
 			})
 		new Setting(contentEl)
-			.setName("Total Time Not Writing")
+			.setName("Total time not writing")
 			.addText((text) => {
 				text.setValue(`${secondsToHumanize(this.sprintRunStat.totalTimeNotWriting)}`)
 				text.setDisabled(true)

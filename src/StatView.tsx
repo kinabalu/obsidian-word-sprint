@@ -1,6 +1,6 @@
 import {ItemView, WorkspaceLeaf} from "obsidian";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot, Root } from "react-dom/client";
 import { PluginContext } from "./context";
 import { StatReactView } from './StatReactView'
 import WordSprintPlugin from "./main";
@@ -10,6 +10,7 @@ export const STAT_VIEW_TYPE = "stat-view";
 
 export default class StatView extends ItemView {
 	plugin: WordSprintPlugin
+	root: Root | null = null
 
 	constructor(plugin: WordSprintPlugin, leaf: WorkspaceLeaf) {
 		super(leaf);
@@ -30,15 +31,16 @@ export default class StatView extends ItemView {
 	}
 
 	async onOpen() {
-		ReactDOM.render(
+		this.root = createRoot(this.containerEl.children[1])
+		this.root.render(
 			<PluginContext.Provider value={this.plugin}>
 				<StatReactView />
-			</PluginContext.Provider>,
-			this.containerEl.children[1]
+			</PluginContext.Provider>
 		)
 	}
 
 	async onClose() {
-		ReactDOM.unmountComponentAtNode(this.containerEl.children[1]);
+		this.root?.unmount()
+		this.root = null
 	}
 }

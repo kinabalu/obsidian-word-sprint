@@ -12,11 +12,6 @@ export interface WordSprintSettings {
 	showEncouragementNotices: boolean;
 	encouragementWordCount: number;
 	encouragementText: string;
-	nanowrimoAuthToken: string;
-	nanowrimoUserId: number;
-	nanowrimoProjectId: number;
-	nanowrimoProjectChallengeId: number;
-	nanowrimoProjectName: number;
 }
 
 export interface SprintRunStat {

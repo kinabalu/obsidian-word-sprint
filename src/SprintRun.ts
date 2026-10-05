@@ -1,11 +1,9 @@
 import {getWordCount, secondsToMMSS} from "./utils";
-
-import {v4 as uuidv4} from 'uuid'
 import {SprintRunStat, FileMetrics} from "./types";
 
 export default class SprintRun {
 
-	id : string = uuidv4()
+	id : string = crypto.randomUUID()
 
 	rand : number;
 	sprintLength : number = 25
@@ -260,6 +258,6 @@ export default class SprintRun {
 			wordsDeleted: aggregateMetrics.wordsDeleted,
 			wordsNet: aggregateMetrics.netWords,
 			created: this.created,
-		} as SprintRunStat;
+		};
 	}
 }

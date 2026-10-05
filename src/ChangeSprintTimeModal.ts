@@ -11,7 +11,7 @@ export default class ChangeSprintTimeModal extends Modal {
 
 	isEnter(e: KeyboardEvent) {
 		return (
-			(e.keyCode === 13 || e.code === "Enter") &&
+			(e.key === "Enter" || e.code === "Enter") &&
 			e.shiftKey === false &&
 			e.metaKey === false &&
 			e.altKey === false &&
@@ -33,11 +33,11 @@ export default class ChangeSprintTimeModal extends Modal {
 		let useAsDefaultSprintLength : boolean = false
 		let newSprintLength : number = this.plugin.settings.sprintLength
 
-		contentEl.createEl('h2', {text: 'Change Sprint Time'})
+		contentEl.createEl('h2', {text: 'Change sprint time'})
 
 		new Setting(contentEl)
-			.setName('New Sprint Length')
-			.setDesc('(in minutes)')
+			.setName('New sprint length')
+			.setDesc('In minutes')
 			.addText((text) => {
 				text.inputEl.type = 'number'
 				text.inputEl.focus()

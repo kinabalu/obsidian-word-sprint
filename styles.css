@@ -4,7 +4,6 @@
 #wordsprint #statsPanel,
 #wordsprint #sectionTab,
 #wordsprint #goalsPanel,
-#wordsprint #nanowrimoProject,
 #wordsprint .secondsLeft {
     display: flex;
     align-content: center;
@@ -38,10 +37,6 @@
 #wordsprint .success {
 	color: white;
 	background-color: green;
-}
-
-#wordsprint #nanowrimoProject {
-	font-style: italic;
 }
 
 /* Time */

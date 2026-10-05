@@ -47,14 +47,14 @@ export const StatReactView = () => {
 	const [totalWordCount, setTotalWordCount] = React.useState(0)
 	const [dailyWordCount, setDailyWordCount] = React.useState(0)
 
-	const [wordCount, setWordCount] = React.useState(null)
-	const [secondsLeft, setSecondsLeft] = React.useState(null)
+	const [wordCount, setWordCount] = React.useState<number>(null)
+	const [secondsLeft, setSecondsLeft] = React.useState<string>(null)
 	const [status, setStatus] = React.useState<string>(null)
 	const [statsAvailable, setStatsAvailable] = React.useState(false)
 	const [isSprintStarted, setIsSprintStarted] = React.useState(false)
 
-	const [dailyGoal, setDailyGoal] = React.useState(null)
-	const [overallGoal, setOverallGoal] = React.useState(null)
+	const [dailyGoal, setDailyGoal] = React.useState<number>(null)
+	const [overallGoal, setOverallGoal] = React.useState<number>(null)
 
 	const [sprintLength, setSprintLength] = React.useState(plugin.theSprint.sprintLength)
 
@@ -121,11 +121,6 @@ export const StatReactView = () => {
 				<button className="sprintStop"  disabled={!isSprintStarted} style={{ opacity: isSprintStarted ? 1 : 0.4 }} onClick={() => {stopSprint()}}>Stop</button>
 			</div>
 
-			{plugin.settings.nanowrimoProjectName &&
-				<div id="nanowrimoProject">
-					{plugin.settings.nanowrimoProjectName}
-				</div>
-			}
 			<hr style={{ marginBottom: 0 }} />
 
 			<div id="sectionTab" style={{ margin: 0, width: '100%'}}>

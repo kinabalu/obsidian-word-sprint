@@ -1,9 +1,9 @@
 {
 	"id": "obsidian-word-sprint",
 	"name": "Word Sprint",
-	"version": "0.3.1",
-	"minAppVersion": "1.5.12",
-	"description": "Word Sprint for Obsidian plugin for your writing projects like Nanowrimo",
+	"version": "0.4.0",
+	"minAppVersion": "1.7.2",
+	"description": "Timed writing sprints with stats, goals, and nudges to keep you writing.",
 	"author": "Andrew Lombardi",
 	"authorUrl": "https://mysticcoders.com",
 	"isDesktopOnly": false
